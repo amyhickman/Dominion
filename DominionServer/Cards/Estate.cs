@@ -6,16 +6,16 @@ using Dominion.Model;
 
 namespace Dominion.Cards
 {
-    public class Silver : Card
+    public class Estate : Card
     {
         public override CardCode Code
         {
-            get { return CardCode.Silver; }
+            get { return CardCode.Estate; }
         }
 
         public override int Cost
         {
-            get { return 3; }
+            get { return 2; }
         }
 
         public override CardSet Set
@@ -25,14 +25,17 @@ namespace Dominion.Cards
 
         public override CardType Type
         {
-            get { return CardType.Treasure; }
+            get
+            {
+                return CardType.Victory;
+            }
         }
 
-        public override int TreasureValue
+        public override int VictoryPoints
         {
             get
             {
-                return 3;
+                return 1;
             }
         }
 

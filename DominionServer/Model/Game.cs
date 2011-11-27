@@ -12,6 +12,11 @@ namespace Dominion.Model
     public class Game
     {
         private static readonly ILog _log = LogManager.GetLogger(typeof(Game));
+        private static readonly CardCode[] _defaultSupplyCodes = new CardCode[] 
+        {
+            CardCode.Duchy, CardCode.Province, CardCode.Estate,
+            CardCode.Gold, CardCode.Silver, CardCode.Copper
+        };
 
         private Dictionary<int, CardContainer> _containers = new Dictionary<int, CardContainer>();
         private Dictionary<int, Card> _cards = new Dictionary<int, Card>();
@@ -31,7 +36,7 @@ namespace Dominion.Model
         public event Action<GameEvent> OnPlayEvent;
 
         #region Constructors
-        public Game(IEnumerable<Player> players, IEnumerable<CardCode> cardCodes)
+        public Game(IEnumerable<Player> players, IList<CardCode> cardCodes)
         {
             _cardFactory = new CardFactory(this);
 
@@ -42,6 +47,11 @@ namespace Dominion.Model
                 AddPlayer(p);
             }
 
+            foreach (CardCode code in _defaultSupplyCodes)
+            {
+                CreateSupplyPile(code);
+            }
+            
             GenerateSupplies(cardCodes);
             _currentTurn = null;
 
@@ -132,49 +142,48 @@ namespace Dominion.Model
         #endregion
 
         #region Supply management
-        private void GenerateSupplies(IEnumerable<CardCode> codes)
-        {
-            _log.Info("Generating supplies.");
-            var availableCodes = new List<CardCode>(CardFactory.AllKnownCardCodes);
-            _log.Debug(String.Format("There are {0} known cards.", availableCodes.Count));
-
-            foreach (CardCode c in codes)
-            {
-                var pile = CreateSupplyPile(c, 10);
-                RegisterContainer(pile);
-                _supplies.Add(c, pile);
-                availableCodes.Remove(c);
-            }
-
-            while (_supplies.Count < 10)
-            {
-               if (availableCodes.Count > 0)
-                {
-                    CardCode c = availableCodes[RNG.Next(0, availableCodes.Count)];
-                    var pile = CreateSupplyPile(c, 10);
-                    RegisterContainer(pile);
-                    _supplies.Add(c, pile);
-                }
-                else
-                    break;
-            }
-        }
-
-        private CardContainer CreateSupplyPile(CardCode c, int quantity)
+        private void CreateSupplyPile(CardCode code)
         {
             CardContainer pile = new CardContainer();
-            _log.Info(String.Format("Generating supply pile for card: {0}, Quantity: {1}", c, quantity));
+            int quantity = 10;
+
+            switch (code)
+            {
+                case CardCode.Estate:
+                case CardCode.Duchy:
+                case CardCode.Province:
+                    quantity = (Players.Count == 2) ? 8 : 12;
+                    break;
+            }
+
+            _log.Info(String.Format("Generating supply pile for card: {0}, Quantity: {1}", code, quantity));
 
             for (int i = 0; i < quantity; i++)
             {
-                Card card = _cardFactory.GetCard(c);
-                RegisterCard(card); 
+                Card card = _cardFactory.CreateCard(code);
+                RegisterCard(card);
                 pile.Add(card);
             }
 
-            return pile;
+            RegisterContainer(pile);
+            _supplies.Add(code, pile);
         }
 
+        private void GenerateSupplies(IList<CardCode> codes)
+        {
+            if (codes.Count != 10)
+                throw new ArgumentOutOfRangeException("10 codes are required.");
+
+            _log.Info("Generating supplies.");
+            
+            foreach (CardCode c in codes)
+            {
+                CreateSupplyPile(c);
+            }
+
+            if (_cards.Any(kv => kv.Value.RequiresCurseSupply))
+                CreateSupplyPile(CardCode.Curse);
+        }
         #endregion
 
         #region Player management

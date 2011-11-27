@@ -10,9 +10,10 @@ namespace Dominion.Util
 {
     public class CardFactory
     {
-        private static Dictionary<CardCode, Func<Card>> _cards = new Dictionary<CardCode, Func<Card>>();
-        private static Dictionary<CardSet, List<CardCode>> _cardsBySet = new Dictionary<CardSet, List<CardCode>>();
-        private static List<Card> _allCards = new List<Card>();
+        private static readonly Dictionary<CardCode, Func<Card>> _cardFactories = new Dictionary<CardCode, Func<Card>>();
+        private static readonly Dictionary<CardSet, List<CardCode>> _cardsBySet = new Dictionary<CardSet, List<CardCode>>();
+        private static readonly List<Card> _allCards = new List<Card>();
+        private static readonly List<CardCode> _eligibleSupplyCards;
 
         public Game Game { get; private set; }
 
@@ -29,7 +30,7 @@ namespace Dominion.Util
                 var lambda = Expression.Lambda<Func<Card>>(ciEx);
                 var factory = lambda.Compile();
                 var card = factory();
-                _cards.Add(card.Code, factory);
+                _cardFactories.Add(card.Code, factory);
 
                 Card c = factory();
                 _allCards.Add(c);
@@ -41,6 +42,8 @@ namespace Dominion.Util
                 }
                 codes.Add(c.Code);
             }
+
+            _eligibleSupplyCards = _allCards.Where(c => c.CanBeSupply).Select(c => c.Code).ToList();
         }
 
         private int _nextId = 0;
@@ -50,20 +53,20 @@ namespace Dominion.Util
             Game = g;
         }
 
-        public Card GetCard(CardCode id)
+        public Card CreateCard(CardCode id)
         {
-            Card c = _cards[id]();
+            Card c = _cardFactories[id]();
             c.Game = Game;
             c.Id = _nextId++;
             return c;
         }
 
-        public IList<Card> GetCards(CardCode id, int quantity)
+        public IList<Card> CreateCards(CardCode id, int quantity)
         {
             List<Card> retval = new List<Card>();
             while (quantity > 0)
             {
-                retval.Add(GetCard(id));
+                retval.Add(CreateCard(id));
                 quantity--;
             }
             return retval;
@@ -76,9 +79,19 @@ namespace Dominion.Util
             return new List<CardCode>();
         }
 
-        public static IList<CardCode> AllKnownCardCodes
+        public static IList<CardCode> GetAllKnownCardCodes()
         {
-            get { return _cards.Keys.ToList(); }
+            return _allCards.Select(c => c.Code).ToList();
+        }
+
+        public static IList<Card> GetAllKnownCards()
+        {
+            return new List<Card>(_allCards);
+        }
+
+        public static IList<CardCode> GetEligibleSupplyCardCodes()
+        {
+            return new List<CardCode>(_eligibleSupplyCards);
         }
     }
 }

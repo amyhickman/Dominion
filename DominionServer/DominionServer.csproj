@@ -13,10 +13,14 @@
     <RootNamespace>Dominion</RootNamespace>
     <AssemblyName>Dominion</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -70,6 +74,12 @@
   <ItemGroup>
     <Compile Include="Cards\Cellar.cs" />
     <Compile Include="Cards\Chancellor.cs" />
+    <Compile Include="Cards\Copper.cs" />
+    <Compile Include="Cards\Curse.cs" />
+    <Compile Include="Cards\Duchy.cs" />
+    <Compile Include="Cards\Estate.cs" />
+    <Compile Include="Cards\Gold.cs" />
+    <Compile Include="Cards\Province.cs" />
     <Compile Include="Cards\Silver.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="GameEventModel\ActionGain.cs" />
