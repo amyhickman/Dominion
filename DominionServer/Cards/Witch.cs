@@ -25,7 +25,7 @@ namespace Dominion.Cards
 
         public override void OnPlay()
         {
-            Game.DrawCard(2);
+            Game.DrawCards(2);
 
             //
             // each other player gains a curse card

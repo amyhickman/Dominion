@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Cards\Cellar.cs" />
     <Compile Include="Cards\Chancellor.cs" />
+    <Compile Include="Cards\Chapel.cs" />
     <Compile Include="Cards\Copper.cs" />
     <Compile Include="Cards\Curse.cs" />
     <Compile Include="Cards\Duchy.cs" />
@@ -83,13 +84,17 @@
     <Compile Include="Cards\Militia.cs" />
     <Compile Include="Cards\Province.cs" />
     <Compile Include="Cards\Silver.cs" />
+    <Compile Include="Cards\ThroneRoom.cs" />
     <Compile Include="Cards\Witch.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
+    <Compile Include="Model\LocationCode.cs" />
+    <Compile Include="PendingEventModel\ChooseActionCardPlayItNTimes.cs" />
     <Compile Include="PendingEventModel\DiscardDownToNCards.cs" />
     <Compile Include="PendingEventModel\PutDeckOnDiscardPile.cs" />
     <Compile Include="PendingEventModel\RevealACard.cs" />
     <Compile Include="Model\Card.cs" />
     <Compile Include="Model\CardContainer.cs" />
+    <Compile Include="PendingEventModel\TrashUpToNCards.cs" />
     <Compile Include="Util\CardFactory.cs" />
     <Compile Include="Model\CardCode.cs" />
     <Compile Include="Model\CardSet.cs" />

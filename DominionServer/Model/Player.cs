@@ -8,6 +8,7 @@ namespace Dominion.Model
 {
     public class Player
     {
+        public string Nickname { get; set; }
         public IPrincipal Principal { get; private set; }
 
         public CardContainer Hand { get; private set; }

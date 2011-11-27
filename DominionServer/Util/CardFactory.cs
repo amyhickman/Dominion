@@ -10,7 +10,15 @@ namespace Dominion.Util
 {
     public class CardFactory
     {
-        private static readonly Dictionary<CardCode, Func<Card>> _cardFactories = new Dictionary<CardCode, Func<Card>>();
+        private class CardMeta
+        {
+            public Func<Card> Factory { get; set; }
+            public Card Meta { get; set; }
+
+            public CardMeta(Card c, Func<Card> fact) { Factory = fact; Meta = c; }
+        }
+
+        private static readonly Dictionary<CardCode, CardMeta> _cards = new Dictionary<CardCode, CardMeta>();
         private static readonly Dictionary<CardSet, List<CardCode>> _cardsBySet = new Dictionary<CardSet, List<CardCode>>();
         private static readonly List<Card> _allCards = new List<Card>();
         private static readonly List<CardCode> _eligibleSupplyCards;
@@ -30,7 +38,7 @@ namespace Dominion.Util
                 var lambda = Expression.Lambda<Func<Card>>(ciEx);
                 var factory = lambda.Compile();
                 var card = factory();
-                _cardFactories.Add(card.Code, factory);
+                _cards.Add(card.Code, new CardMeta(card, factory));
 
                 Card c = factory();
                 _allCards.Add(c);
@@ -55,7 +63,7 @@ namespace Dominion.Util
 
         public Card CreateCard(CardCode id)
         {
-            Card c = _cardFactories[id]();
+            Card c = _cards[id].Factory();
             c.Game = Game;
             c.Id = _nextId++;
             return c;
@@ -92,6 +100,11 @@ namespace Dominion.Util
         public static IList<CardCode> GetEligibleSupplyCardCodes()
         {
             return new List<CardCode>(_eligibleSupplyCards);
+        }
+
+        public static Card GetCardMeta(CardCode code)
+        {
+            return _cards[code].Meta;
         }
     }
 }

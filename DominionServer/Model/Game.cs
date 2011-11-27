@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Dominion.Util;
 using log4net;
 using Dominion.PendingEventModel;
+using System.Diagnostics;
 
 namespace Dominion.Model
 {
@@ -19,16 +20,15 @@ namespace Dominion.Model
         };
 
         private readonly Dictionary<int, CardContainer> _containers = new Dictionary<int, CardContainer>();
-        private readonly Dictionary<int, Card> _cards = new Dictionary<int, Card>();
+        private readonly Dictionary<int, Card> _cardsById = new Dictionary<int, Card>();
         private readonly Dictionary<CardCode, CardContainer> _supplies = new Dictionary<CardCode, CardContainer>();
         private readonly List<Player> _players = new List<Player>();
 
         private readonly Queue<Turn> _turns = new Queue<Turn>();
-        private Turn _currentTurn { get; set; }
-
         private readonly CardContainer _cardsInPlay = new CardContainer();
         private readonly CardContainer _cardsPlayed = new CardContainer();
         private readonly List<PendingAction> _pendingActions = new List<PendingAction>();
+        private bool _started = false;
 
         private readonly CardFactory _cardFactory;
 
@@ -40,35 +40,44 @@ namespace Dominion.Model
         public event Action<int> OnTreasureGain;
         public event Action<Player, Card> OnRevealCard;
         public event Action<Player, List<Card>> OnRevealHand;
-        public event Action<Player, Card> OnDrawCard;
+        public event Action<Player, IList<Card>> OnDrawCards;
         public event Action<Player, CardCode> OnGainCard;
         public event Action<Card> OnCardPlayed;
         public event Action<Player, Card> OnPutCardOnDeck;
         public event Action<Player> OnShuffleDeck;
+        public event Action<Player, Player> OnPossessedTurnStart;
 
         #endregion
 
         #region Constructors
-        public Game(IEnumerable<Player> players, IList<CardCode> cardCodes)
+        public Game()
         {
             _cardFactory = new CardFactory(this);
-
-            foreach (var p in players)
-            {
-                if (p == null) throw new ArgumentOutOfRangeException("Cannot pass in null player");
-                _log.Info(String.Format("Adding player {0}:{1} to game", p.Principal.Identity.Name, p.Id));
-                AddPlayer(p);
-            }
-
-            foreach (CardCode code in _defaultSupplyCodes)
-            {
-                CreateSupplyPile(code);
-            }
-            
-            GenerateSupplies(cardCodes);
-
+           
             RegisterContainer(_cardsInPlay);
             RegisterContainer(_cardsPlayed);
+        }
+        #endregion
+
+        #region Game setup
+        public void StartGame()
+        {
+            if (_supplies.Count < 10)
+                throw new InvalidOperationException("Insufficient number of supplies.");
+
+            if (_supplies.Count > 10)
+                throw new InvalidOperationException("Too many supplies");
+
+            if (_players.Count < 2)
+                throw new InvalidOperationException("Not enough players.");
+
+            foreach (CardCode code in _defaultSupplyCodes)
+                CreateSupplyPile(code);
+
+            _started = true;
+
+            if (_cardsById.Any(kv => kv.Value.RequiresCurseSupply))
+                CreateSupplyPile(CardCode.Curse);
 
             SetupTurnOrder(_players);
 
@@ -77,7 +86,20 @@ namespace Dominion.Model
                 p.Deck.AddRange(_cardFactory.CreateCards(CardCode.Copper, 7));
                 p.Deck.AddRange(_cardFactory.CreateCards(CardCode.Estate, 3));
                 RegisterCards(p.Deck);
+                p.Deck.Shuffle();
+                DrawCards(p, 5);
             }
+
+#if DEBUG
+            foreach (var kv in _cardsById)
+            {
+                Card c = kv.Value;
+                if (c.Container == null)
+                    Debugger.Break();
+            }
+#endif
+
+            
 
             NextTurn();
         }
@@ -113,26 +135,37 @@ namespace Dominion.Model
             _cardsInPlay.Clear();
             _cardsPlayed.Clear();
 
-            _currentTurn = _turns.Dequeue();
-            if (_currentTurn.IsRepeatable)
-                _turns.Enqueue(new Turn(_currentTurn.Owner));
+            CurrentTurn = _turns.Dequeue();
+            if (CurrentTurn.IsRepeatable)
+                _turns.Enqueue(new Turn(CurrentTurn.Owner));
 
-            foreach (var effect in _currentTurn.PendingEffects)
-                effect.Apply(_currentTurn);
+            foreach (var effect in CurrentTurn.PendingEffects)
+                effect.Apply(CurrentTurn);
 
-            _currentTurn.PendingEffects.Clear();
+            CurrentTurn.PendingEffects.Clear();
+
+            if (CurrentTurn.IsPossessed)
+            {
+                if (OnPossessedTurnStart != null)
+                    OnPossessedTurnStart(CurrentTurn.Actor, CurrentTurn.Owner);
+            }
+            else
+            {
+                if (OnTurnStart != null)
+                    OnTurnStart(CurrentPlayer);
+            }
         }
 
         public void EndTurn()
         {
-            Player turnOwner = _currentTurn.Owner;
-            while (_cardsPlayed.Count > 0)
-            {
-                MoveCard(_cardsPlayed[0], turnOwner.DiscardPile);
-            }
+            Player turnOwner = CurrentTurn.Owner;
+            turnOwner.DiscardPile.AddRange(_cardsPlayed);
+
+            if (OnTurnEnd != null)
+                OnTurnEnd(CurrentPlayer);
         }
 
-        public Turn CurrentTurn { get { return _currentTurn; } }
+        public Turn CurrentTurn { get; private set; }
         #endregion
         
         #region Container management
@@ -150,8 +183,8 @@ namespace Dominion.Model
         private void RegisterCard(Card c)
         {
             _log.Debug(String.Format("Registering card: {0}/{1}", c.Code, c.Id));
-            if (!_cards.ContainsKey(c.Id))
-                _cards.Add(c.Id, c);
+            if (!_cardsById.ContainsKey(c.Id))
+                _cardsById.Add(c.Id, c);
         }
 
         private void RegisterCards(IEnumerable<Card> cards)
@@ -169,6 +202,19 @@ namespace Dominion.Model
         #endregion
 
         #region Supply management
+        public void AddSupply(CardCode code)
+        {
+            if (!CardFactory.GetCardMeta(code).CanBeSupply)
+                throw new InvalidOperationException("Card " + code.ToString() + " cannot be used as a supply.");
+
+            if (_supplies.ContainsKey(code))
+                throw new InvalidOperationException("Supply already added.");
+
+            
+
+            CreateSupplyPile(code);
+        }
+
         private void CreateSupplyPile(CardCode code)
         {
             CardContainer pile = new CardContainer();
@@ -195,39 +241,27 @@ namespace Dominion.Model
             RegisterContainer(pile);
             _supplies.Add(code, pile);
         }
-
-        private void GenerateSupplies(IList<CardCode> codes)
-        {
-            if (codes.Count != 10)
-                throw new ArgumentOutOfRangeException("10 codes are required.");
-
-            _log.Info("Generating supplies.");
-            
-            foreach (CardCode c in codes)
-            {
-                CreateSupplyPile(c);
-            }
-
-            if (_cards.Any(kv => kv.Value.RequiresCurseSupply))
-                CreateSupplyPile(CardCode.Curse);
-        }
         #endregion
 
         #region Player management
         public ReadOnlyCollection<Player> Players { get { return new ReadOnlyCollection<Player>(_players); } }
 
-        private void AddPlayer(Player p)
+        public void AddPlayer(Player p)
         {
+            if (_started)
+                throw new InvalidOperationException("Cannot add players after the game has started");
+
             if (p == null)
                 throw new ArgumentNullException("p");
-            
+
+            _log.Info(String.Format("Adding player {0}:{1} to game", p.Principal.Identity.Name, p.Id));
             _players.Add(p);
             RegisterContainer(p.Deck);
             RegisterContainer(p.DiscardPile);
             RegisterContainer(p.Hand);
         }
 
-        public Player CurrentPlayer { get { return _currentTurn.Actor; } }
+        public Player CurrentPlayer { get { return CurrentTurn.Actor; } }
 
         public Player GetPlayerToLeft()
         {
@@ -273,22 +307,33 @@ namespace Dominion.Model
         {
             if (OnActionGain != null)
                 OnActionGain(count);
-            _currentTurn.ActionsRemaining += count;
+            CurrentTurn.ActionsRemaining += count;
         }
 
         public void GainTreasure(int count = 1)
         {
             if (OnTreasureGain != null)
                 OnTreasureGain(count);  
-            _currentTurn.TreasureRemaining += count;
+            CurrentTurn.TreasureRemaining += count;
         }
 
-        public Card DrawCard(int count = 1)
+        public List<Card> DrawCards(int count)
         {
-            Card c = _currentTurn.Owner.Deck.Draw();
-            if (OnDrawCard != null)
-                OnDrawCard(CurrentPlayer, c);
-            return c;
+            return DrawCards(CurrentPlayer, count);
+        }
+
+        public List<Card> DrawCards(Player target, int count)
+        {
+            List<Card> retval = new List<Card>();
+            for (int i = 0; i < count && target.Deck.Count > 0; i++)
+            {
+                Card c = target.Deck.Draw();
+                retval.Add(c);
+            }
+
+            if (OnDrawCards != null)
+                OnDrawCards(target, retval);
+            return retval;
         }
 
         public Card GainCard(CardCode code)
@@ -316,17 +361,17 @@ namespace Dominion.Model
         {
             if (OnBuyGain != null)
                 OnBuyGain(count);
-            _currentTurn.BuysRemaining += count;
+            CurrentTurn.BuysRemaining += count;
         }
 
         public void PlayCard(int cardId)
         {
-            Card c = _cards[cardId];
+            Card c = _cardsById[cardId];
 
             //
             // Make sure the action can be played.  i.e. it needs to be in the players hand
             //
-            if (c.Container.Equals(_currentTurn.Owner.Hand))
+            if (c.Container.Equals(CurrentTurn.Owner.Hand))
             {
                 if (OnCardPlayed != null)
                     OnCardPlayed(c);
@@ -354,6 +399,7 @@ namespace Dominion.Model
                 OnShuffleDeck(target);
         }
         #endregion
+
 
     }
 }

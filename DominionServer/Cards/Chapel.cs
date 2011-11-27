@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
+using Dominion.PendingEventModel;
 
 namespace Dominion.Cards
 {
-    public class Market : Card
+    public class Chapel : Card
     {
         public override int Cost
         {
-            get { return 5; }
+            get { return 2; }
         }
 
         public override CardSet Set
@@ -20,10 +21,7 @@ namespace Dominion.Cards
 
         public override void OnPlay()
         {
-            Game.GainAction(1);
-            Game.DrawCards(1);
-            Game.GainBuy(1);
-            Game.GainTreasure(1);
+            Game.AddPendingAction(new TrashUpToNCards() { Count = 4, FromLocation = LocationCode.Hand, IsRequired = true, Player = Game.CurrentPlayer });
         }
     }
 }

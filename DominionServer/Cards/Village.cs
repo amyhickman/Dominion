@@ -14,7 +14,7 @@ namespace Dominion.Cards
         public override void OnPlay()
         {
             Game.GainAction(2);
-            Game.DrawCard();
+            Game.DrawCards(1);
         }
     }
 }
