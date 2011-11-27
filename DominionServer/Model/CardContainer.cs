@@ -114,5 +114,11 @@ namespace Dominion.Model
             _cards.RemoveAt(_cards.Count - 1);
             return retval;
         }
+
+        public void AddRange(IEnumerable<Card> cards)
+        {
+            foreach (var c in cards)
+                Add(c);
+        }
     }
 }

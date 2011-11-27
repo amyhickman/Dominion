@@ -16,16 +16,11 @@ using System.Threading;
 
 namespace ConsoleTesting
 {
-    class Foo { }
-
     class Program
     {
+        
         static void Main(string[] args)
         {
-            var x = Enum.GetValues(typeof(CardCode)) as CardCode[];
-
-
-
             Player me = new Player(Thread.CurrentPrincipal);
             Player you = new Player(Thread.CurrentPrincipal);
             Game game = new Game(new Player[] { me, you }, CardFactory.GetCardsInSet(CardSet.Base));

@@ -24,5 +24,13 @@ namespace Dominion.Util
                 return _rand.Next(low, max);
             }
         }
+
+        public static double NextDouble()
+        {
+            lock (_rand)
+            {
+                return _rand.NextDouble();
+            }
+        }
     }
 }

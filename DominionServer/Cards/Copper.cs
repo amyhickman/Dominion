@@ -8,11 +8,6 @@ namespace Dominion.Cards
 {
     public class Copper : Card
     {
-        public override CardCode Code
-        {
-            get { return CardCode.Copper; }
-        }
-
         public override int Cost
         {
             get { return 0; }

@@ -8,11 +8,6 @@ namespace Dominion.Cards
 {
     public class Province : Card
     {
-        public override CardCode Code
-        {
-            get { return CardCode.Province; }
-        }
-
         public override int Cost
         {
             get { return 8; }

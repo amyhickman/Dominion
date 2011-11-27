@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Collections.ObjectModel;
 using Dominion.Util;
-using Dominion.GameEventModel;
 using log4net;
+using Dominion.PendingEventModel;
 
 namespace Dominion.Model
 {
@@ -18,22 +18,35 @@ namespace Dominion.Model
             CardCode.Gold, CardCode.Silver, CardCode.Copper
         };
 
-        private Dictionary<int, CardContainer> _containers = new Dictionary<int, CardContainer>();
-        private Dictionary<int, Card> _cards = new Dictionary<int, Card>();
-        private Dictionary<CardCode, CardContainer> _supplies = new Dictionary<CardCode, CardContainer>();
-        private List<Player> _players = new List<Player>();
+        private readonly Dictionary<int, CardContainer> _containers = new Dictionary<int, CardContainer>();
+        private readonly Dictionary<int, Card> _cards = new Dictionary<int, Card>();
+        private readonly Dictionary<CardCode, CardContainer> _supplies = new Dictionary<CardCode, CardContainer>();
+        private readonly List<Player> _players = new List<Player>();
 
-        private Queue<Turn> _turns = new Queue<Turn>();
+        private readonly Queue<Turn> _turns = new Queue<Turn>();
         private Turn _currentTurn { get; set; }
 
-        private CardContainer _cardsInPlay = new CardContainer();
-        private CardContainer _cardsPlayed = new CardContainer();
-        private List<PendingAction> _pendingActions = new List<PendingAction>();
+        private readonly CardContainer _cardsInPlay = new CardContainer();
+        private readonly CardContainer _cardsPlayed = new CardContainer();
+        private readonly List<PendingAction> _pendingActions = new List<PendingAction>();
 
-        private CardFactory _cardFactory;
-        private Random _rand = new Random();
+        private readonly CardFactory _cardFactory;
 
-        public event Action<GameEvent> OnPlayEvent;
+        #region Events
+        public event Action<Player> OnTurnStart;
+        public event Action<Player> OnTurnEnd;
+        public event Action<int> OnActionGain;
+        public event Action<int> OnBuyGain;
+        public event Action<int> OnTreasureGain;
+        public event Action<Player, Card> OnRevealCard;
+        public event Action<Player, List<Card>> OnRevealHand;
+        public event Action<Player, Card> OnDrawCard;
+        public event Action<Player, CardCode> OnGainCard;
+        public event Action<Card> OnCardPlayed;
+        public event Action<Player, Card> OnPutCardOnDeck;
+        public event Action<Player> OnShuffleDeck;
+
+        #endregion
 
         #region Constructors
         public Game(IEnumerable<Player> players, IList<CardCode> cardCodes)
@@ -53,12 +66,20 @@ namespace Dominion.Model
             }
             
             GenerateSupplies(cardCodes);
-            _currentTurn = null;
 
             RegisterContainer(_cardsInPlay);
             RegisterContainer(_cardsPlayed);
 
             SetupTurnOrder(_players);
+
+            foreach (var p in _players)
+            {
+                p.Deck.AddRange(_cardFactory.CreateCards(CardCode.Copper, 7));
+                p.Deck.AddRange(_cardFactory.CreateCards(CardCode.Estate, 3));
+                RegisterCards(p.Deck);
+            }
+
+            NextTurn();
         }
         #endregion
 
@@ -69,7 +90,7 @@ namespace Dominion.Model
                 .Select(p => new 
                 {
                     player = p,
-                    order = _rand.NextDouble()
+                    order = RNG.NextDouble()
                 })
                 .OrderBy(o => o.order)
                 .Select(p => p.player);
@@ -131,6 +152,12 @@ namespace Dominion.Model
             _log.Debug(String.Format("Registering card: {0}/{1}", c.Code, c.Id));
             if (!_cards.ContainsKey(c.Id))
                 _cards.Add(c.Id, c);
+        }
+
+        private void RegisterCards(IEnumerable<Card> cards)
+        {
+            foreach (var c in cards)
+                RegisterCard(c);
         }
 
         public void MoveCard(Card c, CardContainer targetContainer)
@@ -201,7 +228,21 @@ namespace Dominion.Model
         }
 
         public Player CurrentPlayer { get { return _currentTurn.Actor; } }
-        
+
+        public Player GetPlayerToLeft()
+        {
+            return _turns.ToList()[1].Owner;
+        }
+
+        public void ForEachOtherPlayer(Action<Player> action)
+        {
+            foreach (var p in Players)
+            {
+                if (p.Equals(CurrentPlayer))
+                    continue;
+                action(p);
+            }
+        }
         #endregion
 
         #region Game event management
@@ -211,41 +252,51 @@ namespace Dominion.Model
             _pendingActions.Add(action);
         }
 
-        public void CompletePendingAction(PendingActionCode code)
-        {
-
-        }
-
         public IList<PendingAction> PendingActions { get { return _pendingActions; } }
         #endregion
 
         #region Game activity
         public void RevealCard(Card card)
         {
-            throw new NotImplementedException();
+            if (OnRevealCard != null)
+                OnRevealCard(CurrentPlayer, card);
+        }
+
+        public void RevealCard(Player target, Card card)
+        {
+            if (OnRevealCard != null)
+                OnRevealCard(target, card);
         }
 
 
         public void GainAction(int count = 1)
         {
-            OnPlayEvent(new ActionGain(CurrentPlayer, count));
+            if (OnActionGain != null)
+                OnActionGain(count);
             _currentTurn.ActionsRemaining += count;
         }
 
-        public void GainTreasure(int count)
+        public void GainTreasure(int count = 1)
         {
-            OnPlayEvent(new TreasureGain(CurrentPlayer, count));
+            if (OnTreasureGain != null)
+                OnTreasureGain(count);  
             _currentTurn.TreasureRemaining += count;
         }
 
         public Card DrawCard(int count = 1)
         {
             Card c = _currentTurn.Owner.Deck.Draw();
-            OnPlayEvent(new CardDraw(CurrentPlayer, c));
+            if (OnDrawCard != null)
+                OnDrawCard(CurrentPlayer, c);
             return c;
         }
 
         public Card GainCard(CardCode code)
+        {
+            return GainCard(CurrentPlayer, code);           
+        }
+
+        public Card GainCard(Player target, CardCode code)
         {
             if (!_supplies.ContainsKey(code)) throw new ArgumentOutOfRangeException("Supply piles do not include " + code.ToString());
             Card retval = null;
@@ -256,17 +307,19 @@ namespace Dominion.Model
                 retval = pile.Draw();
             }
 
-            OnPlayEvent(new CardGain(CurrentPlayer, retval));
-            return retval;            
+            if (OnGainCard != null)
+                OnGainCard(target, code);
+            return retval;
         }
 
         public void GainBuy(int count = 1)
         {
-            OnPlayEvent(new BuyGain(CurrentPlayer, count));
+            if (OnBuyGain != null)
+                OnBuyGain(count);
             _currentTurn.BuysRemaining += count;
         }
 
-        public void PlayAction(int cardId)
+        public void PlayCard(int cardId)
         {
             Card c = _cards[cardId];
 
@@ -275,15 +328,30 @@ namespace Dominion.Model
             //
             if (c.Container.Equals(_currentTurn.Owner.Hand))
             {
-                OnPlayEvent(new ActionPlayed(CurrentPlayer, c));
+                if (OnCardPlayed != null)
+                    OnCardPlayed(c);
                 c.OnPlay();
             }
         }
 
         public void PutCardOnDeck(Card card)
         {
-            OnPlayEvent(new PutCardOnDeck(CurrentPlayer, card));
+            if (OnPutCardOnDeck != null)
+                OnPutCardOnDeck(CurrentPlayer, card);
             CurrentTurn.Owner.Deck.AddToTop(card);
+        }
+
+        public void RevealHand(Player target)
+        {
+            if (OnRevealHand != null)
+                OnRevealHand(target, target.Hand.ToList());
+        }
+
+        public void ShuffleDeck(Player target)
+        {
+            target.Deck.Shuffle();
+            if (OnShuffleDeck != null)
+                OnShuffleDeck(target);
         }
         #endregion
 

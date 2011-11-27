@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Security.Principal;
-using Dominion.GameEventModel;
 
 namespace Dominion.Model
 {
@@ -17,15 +16,12 @@ namespace Dominion.Model
         public int Id { get; set; }
         public int VictoryPoints { get; set; }
 
-        public List<PendingActionCode> RequiredActions { get; private set; }
-
         public Player(IPrincipal principal)
         {
             Principal = principal;
             Hand = new CardContainer();
             Deck = new CardContainer();
             DiscardPile = new CardContainer();
-            RequiredActions = new List<PendingActionCode>();
         }
 
 

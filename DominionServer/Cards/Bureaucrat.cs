@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
-using Dominion.GameEventModel;
+using Dominion.PendingEventModel;
 
 
 namespace Dominion.Cards
 {
     public class Bureaucrat : Card
     {
-        public override CardCode Code { get { return Model.CardCode.Bureaucrat; } }
         public override int Cost { get { return 4; } }
         public override CardSet Set { get { return CardSet.Base; } }
 
@@ -19,19 +18,26 @@ namespace Dominion.Cards
             var silver = Game.GainCard(CardCode.Silver);
             Game.PutCardOnDeck(silver);
 
-            foreach (var player in Game.Players)
-            {
-                if (player.Equals(Game.CurrentPlayer))
-                    continue;
+            Game.ForEachOtherPlayer(p =>
+                {
+                    // each other player must reveal a victory card from his hand or reveal a hand with no victory cards
+                    var victoryCodes = p.Hand.Where(c=> c.IsVictory).Select(c => c.Code).Distinct().ToList();
 
-                // each other player must reveal a victory card from his hand or reveal a hand with no victory cards
-                Game.AddPendingAction(new PendingAction() 
-                { 
-                    Player = player,
-                    Codes = PendingActionCode.RevealVictoryCard | PendingActionCode.RevealHandWithNoVictoryCards,
-                    IsRequired = true
+                    switch (victoryCodes.Count)
+                    {
+                        case 0:
+                            Game.RevealHand(p);
+                            break;
+                        case 1:
+                            Game.RevealCard(p.Hand.Where(c => c.Code == victoryCodes[0]).FirstOrDefault());
+                            break;
+                        default:
+                            var victories = p.Hand.Where(c => victoryCodes.Contains(c.Code)).ToList();
+                            Game.AddPendingAction(new RevealACard(p, victories, 1));
+                            break;
+                    }
+                    
                 });
-            }
         }
     }
 }
