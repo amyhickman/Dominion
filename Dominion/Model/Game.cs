@@ -7,6 +7,7 @@ using Dominion.Util;
 using log4net;
 using Dominion.PendingEventModel;
 using System.Diagnostics;
+using Dominion.Interfaces;
 
 namespace Dominion.Model
 {
@@ -32,23 +33,17 @@ namespace Dominion.Model
 
         private readonly CardFactory _cardFactory;
 
-        #region Events
-        public event Action<Player> OnTurnStart;
-        public event Action<Player> OnTurnEnd;
-        public event Action<int> OnActionGain;
-        public event Action<int> OnBuyGain;
-        public event Action<int> OnTreasureGain;
-        public event Action<Player, Card> OnRevealCard;
-        public event Action<Player, List<Card>> OnRevealHand;
-        public event Action<Player, IList<Card>> OnDrawCards;
-        public event Action<Player, CardCode> OnGainCard;
-        public event Action<Card> OnCardPlayed;
-        public event Action<Player, Card> OnPutCardOnDeck;
-        public event Action<Player> OnShuffleDeck;
-        public event Action<Player, Player> OnPossessedTurnStart;
-
-        #endregion
-
+        private IGameObserver _observer = new DummyObserver();
+        public IGameObserver Observer
+        {
+            get { return _observer; }
+            set
+            {
+                if (value == null)
+                    _observer = new DummyObserver();
+            }
+        }
+        
         #region Constructors
         public Game()
         {
@@ -146,13 +141,11 @@ namespace Dominion.Model
 
             if (CurrentTurn.IsPossessed)
             {
-                if (OnPossessedTurnStart != null)
-                    OnPossessedTurnStart(CurrentTurn.Actor, CurrentTurn.Owner);
+                Observer.OnPossessedTurnStart(CurrentTurn.Actor, CurrentTurn.Owner);
             }
             else
             {
-                if (OnTurnStart != null)
-                    OnTurnStart(CurrentPlayer);
+                Observer.OnTurnStart(CurrentPlayer);
             }
         }
 
@@ -161,8 +154,7 @@ namespace Dominion.Model
             Player turnOwner = CurrentTurn.Owner;
             turnOwner.DiscardPile.AddRange(_cardsPlayed);
 
-            if (OnTurnEnd != null)
-                OnTurnEnd(CurrentPlayer);
+            Observer.OnTurnEnd(CurrentPlayer);
         }
 
         public Turn CurrentTurn { get; private set; }
@@ -292,28 +284,24 @@ namespace Dominion.Model
         #region Game activity
         public void RevealCard(Card card)
         {
-            if (OnRevealCard != null)
-                OnRevealCard(CurrentPlayer, card);
+            Observer.OnRevealCard(CurrentPlayer, card);
         }
 
         public void RevealCard(Player target, Card card)
         {
-            if (OnRevealCard != null)
-                OnRevealCard(target, card);
+            Observer.OnRevealCard(target, card);
         }
 
 
         public void GainAction(int count = 1)
         {
-            if (OnActionGain != null)
-                OnActionGain(count);
+            Observer.OnActionGain(count);
             CurrentTurn.ActionsRemaining += count;
         }
 
         public void GainTreasure(int count = 1)
         {
-            if (OnTreasureGain != null)
-                OnTreasureGain(count);  
+            Observer.OnTreasureGain(count);  
             CurrentTurn.TreasureRemaining += count;
         }
 
@@ -331,8 +319,7 @@ namespace Dominion.Model
                 retval.Add(c);
             }
 
-            if (OnDrawCards != null)
-                OnDrawCards(target, retval);
+            Observer.OnDrawCards(target, retval);
             return retval;
         }
 
@@ -352,15 +339,13 @@ namespace Dominion.Model
                 retval = pile.Draw();
             }
 
-            if (OnGainCard != null)
-                OnGainCard(target, code);
+            Observer.OnGainCard(target, code);
             return retval;
         }
 
         public void GainBuy(int count = 1)
         {
-            if (OnBuyGain != null)
-                OnBuyGain(count);
+            Observer.OnBuyGain(count);
             CurrentTurn.BuysRemaining += count;
         }
 
@@ -373,30 +358,26 @@ namespace Dominion.Model
             //
             if (c.Container.Equals(CurrentTurn.Owner.Hand))
             {
-                if (OnCardPlayed != null)
-                    OnCardPlayed(c);
+                Observer.OnCardPlayed(c);
                 c.OnPlay();
             }
         }
 
         public void PutCardOnDeck(Card card)
         {
-            if (OnPutCardOnDeck != null)
-                OnPutCardOnDeck(CurrentPlayer, card);
+            Observer.OnPutCardOnDeck(CurrentPlayer, card);
             CurrentTurn.Owner.Deck.AddToTop(card);
         }
 
         public void RevealHand(Player target)
         {
-            if (OnRevealHand != null)
-                OnRevealHand(target, target.Hand.ToList());
+            Observer.OnRevealHand(target, target.Hand.ToList());
         }
 
         public void ShuffleDeck(Player target)
         {
             target.Deck.Shuffle();
-            if (OnShuffleDeck != null)
-                OnShuffleDeck(target);
+            Observer.OnShuffleDeck(target);
         }
         #endregion
 

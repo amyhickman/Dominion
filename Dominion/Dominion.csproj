@@ -66,12 +66,14 @@
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="Interfaces\IChatServer.cs" />
     <Compile Include="Interfaces\IDominionServer.cs" />
+    <Compile Include="Interfaces\IGameObserver.cs" />
     <Compile Include="Interfaces\IGameServer.cs" />
     <Compile Include="Model\Card.cs" />
     <Compile Include="Model\CardCode.cs" />
     <Compile Include="Model\CardContainer.cs" />
     <Compile Include="Model\CardSet.cs" />
     <Compile Include="Model\CardType.cs" />
+    <Compile Include="Model\DummyObserver.cs" />
     <Compile Include="Model\Effect.cs" />
     <Compile Include="Model\Game.cs" />
     <Compile Include="Model\LocationCode.cs" />
