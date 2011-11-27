@@ -8,6 +8,11 @@ using System.ServiceModel.Configuration;
 using System.ServiceModel.Channels;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.IO;
+using Dominion;
+using Dominion.Model;
+using Dominion.Util;
+using System.Threading;
 
 namespace ConsoleTesting
 {
@@ -17,11 +22,13 @@ namespace ConsoleTesting
     {
         static void Main(string[] args)
         {
-            ConstructorInfo ci = typeof(Foo).GetConstructor(Type.EmptyTypes);
-            var ciEx = Expression.New(ci);
-            var lambda = Expression.Lambda<Func<Foo>>(ciEx);
-            var method = lambda.Compile();
-            Foo f = method();
+            var x = Enum.GetValues(typeof(CardCode)) as CardCode[];
+
+
+
+            Player me = new Player(Thread.CurrentPrincipal);
+            Player you = new Player(Thread.CurrentPrincipal);
+            Game game = new Game(new Player[] { me, you }, CardFactory.GetCardsInSet(CardSet.Base));
         }
     }
 

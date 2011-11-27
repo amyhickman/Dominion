@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Collections.ObjectModel;
+using Dominion.Util;
+using Dominion.GameEventModel;
+using log4net;
 
 namespace Dominion.Model
 {
     public class Game
     {
+        private static readonly ILog _log = LogManager.GetLogger(typeof(Game));
+
         private Dictionary<int, CardContainer> _containers = new Dictionary<int, CardContainer>();
         private Dictionary<int, Card> _cards = new Dictionary<int, Card>();
         private Dictionary<CardCode, CardContainer> _supplies = new Dictionary<CardCode, CardContainer>();
@@ -18,13 +23,35 @@ namespace Dominion.Model
 
         private CardContainer _cardsInPlay = new CardContainer();
         private CardContainer _cardsPlayed = new CardContainer();
-        private List<PendingAction> _pendingEvents = new List<PendingAction>();
+        private List<PendingAction> _pendingActions = new List<PendingAction>();
 
-        private CardFactory _cardFactory = new CardFactory();
+        private CardFactory _cardFactory;
         private Random _rand = new Random();
 
-        public event Action<PlayEvent> OnPlayEvent;
-        
+        public event Action<GameEvent> OnPlayEvent;
+
+        #region Constructors
+        public Game(IEnumerable<Player> players, IEnumerable<CardCode> cardCodes)
+        {
+            _cardFactory = new CardFactory(this);
+
+            foreach (var p in players)
+            {
+                if (p == null) throw new ArgumentOutOfRangeException("Cannot pass in null player");
+                _log.Info(String.Format("Adding player {0}:{1} to game", p.Principal.Identity.Name, p.Id));
+                AddPlayer(p);
+            }
+
+            GenerateSupplies(cardCodes);
+            _currentTurn = null;
+
+            RegisterContainer(_cardsInPlay);
+            RegisterContainer(_cardsPlayed);
+
+            SetupTurnOrder(_players);
+        }
+        #endregion
+
         #region Turn management
         private void SetupRandomTurnOrder()
         {
@@ -57,7 +84,7 @@ namespace Dominion.Model
 
             _currentTurn = _turns.Dequeue();
             if (_currentTurn.IsRepeatable)
-                _turns.Enqueue(new Turn(_currentTurn.Owner, true));
+                _turns.Enqueue(new Turn(_currentTurn.Owner));
 
             foreach (var effect in _currentTurn.PendingEffects)
                 effect.Apply(_currentTurn);
@@ -73,6 +100,8 @@ namespace Dominion.Model
                 MoveCard(_cardsPlayed[0], turnOwner.DiscardPile);
             }
         }
+
+        public Turn CurrentTurn { get { return _currentTurn; } }
         #endregion
         
         #region Container management
@@ -89,8 +118,9 @@ namespace Dominion.Model
         #region Card management
         private void RegisterCard(Card c)
         {
-            if (!_cards.ContainsKey(c.CardId))
-                _cards.Add(c.CardId, c);
+            _log.Debug(String.Format("Registering card: {0}/{1}", c.Code, c.Id));
+            if (!_cards.ContainsKey(c.Id))
+                _cards.Add(c.Id, c);
         }
 
         public void MoveCard(Card c, CardContainer targetContainer)
@@ -102,37 +132,55 @@ namespace Dominion.Model
         #endregion
 
         #region Supply management
-        private void GenerateSupplies(params CardCode[] codes)
+        private void GenerateSupplies(IEnumerable<CardCode> codes)
         {
+            _log.Info("Generating supplies.");
+            var availableCodes = new List<CardCode>(CardFactory.AllKnownCardCodes);
+            _log.Debug(String.Format("There are {0} known cards.", availableCodes.Count));
+
             foreach (CardCode c in codes)
             {
-                CreateSupplyPile(c, 10);
+                var pile = CreateSupplyPile(c, 10);
+                RegisterContainer(pile);
+                _supplies.Add(c, pile);
+                availableCodes.Remove(c);
             }
 
             while (_supplies.Count < 10)
             {
-                CardCode c = (CardCode)_rand.Next(0, Enum.GetValues(typeof(CardCode)).Cast<int>().Max());
-                CreateSupplyPile(c, 10);
+               if (availableCodes.Count > 0)
+                {
+                    CardCode c = availableCodes[RNG.Next(0, availableCodes.Count)];
+                    var pile = CreateSupplyPile(c, 10);
+                    RegisterContainer(pile);
+                    _supplies.Add(c, pile);
+                }
+                else
+                    break;
             }
         }
 
-        private void CreateSupplyPile(CardCode c, int quantity)
+        private CardContainer CreateSupplyPile(CardCode c, int quantity)
         {
             CardContainer pile = new CardContainer();
-            RegisterContainer(pile);
+            _log.Info(String.Format("Generating supply pile for card: {0}, Quantity: {1}", c, quantity));
 
             for (int i = 0; i < quantity; i++)
             {
                 Card card = _cardFactory.GetCard(c);
+                RegisterCard(card); 
                 pile.Add(card);
-                RegisterCard(card);
             }
+
+            return pile;
         }
 
         #endregion
 
         #region Player management
-        public void AddPlayer(Player p)
+        public ReadOnlyCollection<Player> Players { get { return new ReadOnlyCollection<Player>(_players); } }
+
+        private void AddPlayer(Player p)
         {
             if (p == null)
                 throw new ArgumentNullException("p");
@@ -142,27 +190,93 @@ namespace Dominion.Model
             RegisterContainer(p.DiscardPile);
             RegisterContainer(p.Hand);
         }
+
+        public Player CurrentPlayer { get { return _currentTurn.Actor; } }
+        
         #endregion
 
-        public Game()
+        #region Game event management
+        public void AddPendingAction(PendingAction action)
         {
-            _currentTurn = null;
-
-            RegisterContainer(_cardsInPlay);
-            RegisterContainer(_cardsPlayed);
+            if (action == null) throw new ArgumentNullException("action");
+            _pendingActions.Add(action);
         }
 
-        internal void RevealCard(Card card)
+        public void CompletePendingAction(PendingActionCode code)
+        {
+
+        }
+
+        public IList<PendingAction> PendingActions { get { return _pendingActions; } }
+        #endregion
+
+        #region Game activity
+        public void RevealCard(Card card)
         {
             throw new NotImplementedException();
         }
 
-        public void AddPendingAction(PendingAction action)
-        {
-            if (action == null) throw new ArgumentNullException("action");
 
-            _pendingEvents.Add(action);
+        public void GainAction(int count = 1)
+        {
+            OnPlayEvent(new ActionGain(CurrentPlayer, count));
+            _currentTurn.ActionsRemaining += count;
         }
+
+        public void GainTreasure(int count)
+        {
+            OnPlayEvent(new TreasureGain(CurrentPlayer, count));
+            _currentTurn.TreasureRemaining += count;
+        }
+
+        public Card DrawCard(int count = 1)
+        {
+            Card c = _currentTurn.Owner.Deck.Draw();
+            OnPlayEvent(new CardDraw(CurrentPlayer, c));
+            return c;
+        }
+
+        public Card GainCard(CardCode code)
+        {
+            if (!_supplies.ContainsKey(code)) throw new ArgumentOutOfRangeException("Supply piles do not include " + code.ToString());
+            Card retval = null;
+
+            CardContainer pile = _supplies[code];
+            if (pile.Count > 0)
+            {
+                retval = pile.Draw();
+            }
+
+            OnPlayEvent(new CardGain(CurrentPlayer, retval));
+            return retval;            
+        }
+
+        public void GainBuy(int count = 1)
+        {
+            OnPlayEvent(new BuyGain(CurrentPlayer, count));
+            _currentTurn.BuysRemaining += count;
+        }
+
+        public void PlayAction(int cardId)
+        {
+            Card c = _cards[cardId];
+
+            //
+            // Make sure the action can be played.  i.e. it needs to be in the players hand
+            //
+            if (c.Container.Equals(_currentTurn.Owner.Hand))
+            {
+                OnPlayEvent(new ActionPlayed(CurrentPlayer, c));
+                c.OnPlay();
+            }
+        }
+
+        public void PutCardOnDeck(Card card)
+        {
+            OnPlayEvent(new PutCardOnDeck(CurrentPlayer, card));
+            CurrentTurn.Owner.Deck.AddToTop(card);
+        }
+        #endregion
 
     }
 }

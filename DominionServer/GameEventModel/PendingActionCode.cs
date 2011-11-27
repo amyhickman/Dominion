@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Dominion.Model
+namespace Dominion.GameEventModel
 {
     [Flags]
-    public enum PendingActionCodes
+    public enum PendingActionCode
     {
         RevealVictoryCard,
         RevealHandWithNoVictoryCards,
-        ShuffleDeckIntoDiscardPile
+        ShuffleDeckIntoDiscardPile,
+        PlayActionCard,
+        PlayTreasuryCard
     }
 }

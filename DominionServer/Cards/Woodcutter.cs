@@ -8,7 +8,7 @@ namespace Dominion.Cards
 {
     public class Woodcutter : Card
     {
-        public override CardCode CardCode
+        public override CardCode Code
         {
             get { return CardCode.Woodcutter; }
         }
@@ -23,10 +23,10 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay(Turn turn)
+        public override void OnPlay()
         {
-            turn.GainBuy();
-            turn.GainCoin(2);
+            Game.GainBuy();
+            Game.GainTreasure(2);
         }
     }
 }

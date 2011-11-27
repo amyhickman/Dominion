@@ -7,21 +7,28 @@ namespace Dominion.Model
 {
     public abstract class Card
     {
-        public int CardId { get; set; }
+        public int Id { get; set; }
         public CardContainer Container { get; set; }
 
         public virtual string Name { get { return this.GetType().Name; } }
-        public abstract CardCode CardCode { get; }
+        public abstract CardCode Code { get; }
         public abstract int Cost { get; }
         public virtual Uri ImageSource { get { return null; } }
         public abstract CardSet Set { get; }
+        public virtual CardType Type { get { return CardType.Action; } }
+        public Game Game { get; set; }
 
-        public virtual bool IsTreasure { get { return false; } }
-        public virtual bool IsVictory { get { return false; } }
-        public virtual bool IsAction { get { return true; } }
+        public bool IsCardType(CardType t)
+        {
+            return (Type & t) == t;
+        }
 
-        public virtual void OnPlay(Turn turn) { }
-        public virtual void OnDiscard(Turn turn) { }
-        public virtual void OnGain(Turn turn) { }
+        public bool IsVictory { get { return IsCardType(CardType.Victory); } }
+        public bool IsAction { get { return IsCardType(CardType.Action); } }
+        public bool IsTreasure { get { return IsCardType(CardType.Treasure); } }
+
+        public virtual void OnPlay() { }
+        public virtual void OnDiscard() { }
+        public virtual void OnGain() { }
     }
 }

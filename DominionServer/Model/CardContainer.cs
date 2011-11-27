@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Dominion.Util;
 
 namespace Dominion.Model
 {
@@ -90,7 +91,28 @@ namespace Dominion.Model
 
         public void Add(Card item)
         {
-            throw new Exception("Don't use this method");
+            AddToTop(item);
+        }
+
+        public void Shuffle()
+        {
+            lock (_cards)
+            {
+                for (int i = _cards.Count - 1; i > 0; i--)
+                {
+                    int k = RNG.Next(0, i);
+                    Card tmp = _cards[k];
+                    _cards[k] = _cards[i];
+                    _cards[i] = tmp;
+                }
+            }
+        }
+
+        public Card Draw()
+        {
+            Card retval = _cards[_cards.Count - 1];
+            _cards.RemoveAt(_cards.Count - 1);
+            return retval;
         }
     }
 }

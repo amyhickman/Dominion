@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
+using Dominion.GameEventModel;
 
 namespace Dominion.Cards
 {
     public class Chancellor : Card
     {
-        public override CardCode CardCode
+        public override CardCode Code
         {
             get { return CardCode.Chancellor; }
         }
@@ -23,13 +24,13 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay(Turn turn)
+        public override void OnPlay()
         {
-            turn.GainCoin(2);
-            turn.Game.AddPendingAction(new PendingAction()
+            Game.GainTreasure(2);
+            Game.AddPendingAction(new PendingAction()
             {
-                Player = turn.Owner,
-                Codes = PendingActionCodes.ShuffleDeckIntoDiscardPile,
+                Player = Game.CurrentPlayer,
+                Codes = PendingActionCode.ShuffleDeckIntoDiscardPile,
                 IsRequired = false
             });
         }

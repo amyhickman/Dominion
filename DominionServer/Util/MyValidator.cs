@@ -5,7 +5,7 @@ using System.Web;
 using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
 
-namespace Dominion
+namespace Dominion.Util
 {
     public class MyValidator : UserNamePasswordValidator
     {

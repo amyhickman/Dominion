@@ -8,14 +8,14 @@ namespace Dominion.Cards
 {
     public class Village : Card
     {
-        public override CardCode CardCode { get { return CardCode.Village ; } }
+        public override CardCode Code { get { return CardCode.Village ; } }
         public override int Cost { get { return 3; } }
         public override CardSet Set { get { return CardSet.Base; } }
 
-        public override void OnPlay(Turn turn)
+        public override void OnPlay()
         {
-            turn.GainAction(2);
-            turn.DrawCard();
+            Game.GainAction(2);
+            Game.DrawCard();
         }
     }
 }
