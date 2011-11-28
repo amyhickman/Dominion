@@ -15,9 +15,9 @@ namespace Dominion.Model
         public Player Owner { get; set; }
 
         /// <summary>
-        /// For things like Possession, the turn owner might not be the person who owns the deck
+        /// For things like Possession, the turn owner might not be the person who calls the shots
         /// </summary>
-        public Player Actor { get; set; }
+        public Player Possessor { get; set; }
 
         /// <summary>
         /// When this turn is complete, do I re-enqueue the turn, or just remove it?
@@ -28,23 +28,25 @@ namespace Dominion.Model
         public int BuysRemaining { get; set; }
         public int TreasureRemaining { get; set; }
         public Phases CurrentPhase { get; set; }
-        public bool IsPossessed { get; set; }
+        public bool IsPossessed { get { return Possessor != null; } }
         public List<Effect> PendingEffects { get; private set; }
 
         public Turn(Player owner) 
-            : this(owner, owner, isRepeatable: true, isPossessed: false)
-        {}
-
-        public Turn(Player owner, Player actor, bool isRepeatable = false, bool isPossessed = false) 
         {
             Owner = owner;
-            Actor = actor;
-            IsRepeatable = isRepeatable;
+            Possessor = null;
+            IsRepeatable = true;
             ActionsRemaining = BuysRemaining = 1;
             TreasureRemaining = 0;
             CurrentPhase = Phases.Action;
-            IsPossessed = isPossessed;
             PendingEffects = new List<Effect>();
+        }
+
+        public Turn(Player owner, Player possessor, bool isRepeatable = false) 
+            :this(owner)
+        {
+            Possessor = possessor;
+            IsRepeatable = isRepeatable;
         }
     }
 }

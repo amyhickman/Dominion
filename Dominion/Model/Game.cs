@@ -141,7 +141,7 @@ namespace Dominion.Model
 
             if (CurrentTurn.IsPossessed)
             {
-                Observer.OnPossessedTurnStart(CurrentTurn.Actor, CurrentTurn.Owner);
+                Observer.OnPossessedTurnStart(CurrentTurn.Possessor, CurrentTurn.Owner);
             }
             else
             {
@@ -253,7 +253,7 @@ namespace Dominion.Model
             RegisterContainer(p.Hand);
         }
 
-        public Player CurrentPlayer { get { return CurrentTurn.Actor; } }
+        public Player CurrentPlayer { get { return CurrentTurn.Possessor; } }
 
         public Player GetPlayerToLeft()
         {
