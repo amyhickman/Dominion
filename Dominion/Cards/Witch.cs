@@ -24,16 +24,16 @@ namespace Dominion.Cards
             get { return new List<CardCode>() { CardCode.Curse }; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.DrawCards(2);
+            ctx.DrawCards(2);
 
             //
             // each other player gains a curse card
             //
-            Game.ForEachOtherPlayer(p =>
+            ctx.ForEachOtherPlayer(p =>
             {
-                Card curse = Game.GainCard(p, CardCode.Curse);
+                Card curse = ctx.GainCard(p, CardCode.Curse);
                 if (curse != null)
                     p.DiscardPile.Add(curse);
             });

@@ -27,7 +27,6 @@ namespace Dominion.Util
         {
             Card c = CardDirectory.CreateCard(code);
             _cardsById.Add(c.Id, c);
-            c.Game = Game;
             return c;
         }
 

@@ -6,6 +6,7 @@ using log4net;
 using System.Diagnostics;
 using Dominion.Interfaces;
 using Dominion.Constants;
+using Dominion.Exceptions;
 
 namespace Dominion.Model
 {
@@ -18,9 +19,10 @@ namespace Dominion.Model
         private readonly CardManager CardMan;
         private readonly SuppliesManager SupplyMan;
         private readonly TurnManager TurnMan;
-        private readonly Dictionary<Guid, PendingEvent> _pendingselections = new Dictionary<Guid, PendingEvent>();
+        private readonly Dictionary<Guid, PendingEvent> _pending = new Dictionary<Guid, PendingEvent>();
 
         private Turn CurrentTurn { get { return TurnMan.Current; } }
+        private readonly object _lck = new object();
                 
         #region Constructors
         internal Game(IList<Player> players, IList<CardCode> supplies)
@@ -36,7 +38,7 @@ namespace Dominion.Model
                 p.Deck.AddRange(CardMan.CreateCards(CardCode.Copper, 7));
                 p.Deck.AddRange(CardMan.CreateCards(CardCode.Estate, 3));
                 p.Deck.Shuffle();
-                DrawCards(p, 5);
+                p.Hand.AddRange(p.Deck.Draw(5));
             }
 
             _started = true;
@@ -46,16 +48,20 @@ namespace Dominion.Model
         #region Player management
         public IList<Player> GetPlayers() { return new List<Player>(_players); }
         
-        private Player CurrentPossessor { get { return CurrentTurn.Possessor; } }
         public Player CurrentPlayer { get { return CurrentTurn.Owner; } }
+        #endregion
 
-        internal void ForEachOtherPlayer(Action<Player> action)
+        #region Event notifications
+        public void NotifyPlayers(Action<Player> notification) { _players.ForEach(p=> notification(p)); }
+
+        public void NotifyPlayers(Action<Player> currentPlayerNotifier, Action<Player> otherPlayerNotifier)
         {
+            currentPlayerNotifier(CurrentPlayer);
             foreach (var p in _players)
             {
                 if (p.Equals(CurrentPlayer))
                     continue;
-                action(p);
+                otherPlayerNotifier(p);
             }
         }
         #endregion
@@ -63,12 +69,12 @@ namespace Dominion.Model
         #region Game event management
         internal void AddPendingEvent(PendingEvent pending)
         {
-            _pendingselections.Add(pending.Id, pending);
+            _pending.Add(pending.Id, pending);
         }
-
+        
         private void ReceivePendingEventResponse(PendingEventResponse response)
         {
-            PendingEvent request = _pendingselections[response.PendingEventId];
+            PendingEvent request = _pending[response.PendingEventId];
 
             if (request.IsSatisfiedByResponse(response))
                 request.OnResponse(response);
@@ -94,113 +100,69 @@ namespace Dominion.Model
 
         #endregion
 
-        #region Game activity - All of these should be internal
-        internal void RevealCard(Player revealer, Card card)
+        private PlayContext CreatePlayContext()
         {
-            foreach (var p in _players)
+            return new PlayContext(this, CurrentTurn, SupplyMan);
+        }
+
+        private void MoveCardToInPlay(Card c)
+        {
+            c.Container.Remove(c);
+            CurrentTurn.CardsPlayed.Add(c);
+            CurrentTurn.CardsInPlay.Add(c);
+        }
+
+        #region PlayCard
+        public IPlayCardResults PlayCard(Player player, Card c)
+        {
+            lock (_lck)
             {
-                p.OnRevealCard(revealer, card);
+                if (!CurrentPlayer.Equals(player))
+                    throw new YouCantDoThatException("It's not your turn");
+
+                return PlayCardInternal(player, c);
             }
         }
 
-        internal void GainAction(int count = 1)
+        private IPlayCardResults PlayCardInternal(Player player, Card c)
         {
-            _players.ForEach(p=> p.OnActionGain(count));            
-            CurrentTurn.ActionsRemaining += count;
-        }
+            PlayContext ctx = CreatePlayContext();
 
-        internal void GainTreasure(int count = 1)
-        {
-            _players.ForEach(p => p.OnTreasureGain(count));
-            CurrentTurn.TreasureRemaining += count;
-        }
+            if (!(c.IsAction || c.IsTreasure))
+                throw new YouCantDoThatException("You can only play actions and treasures");
 
-        internal IList<Card> DrawCards(int count)
-        {
-            return DrawCards(CurrentPlayer, count);
-        }
-
-        internal IList<Card> DrawCards(Player target, int count)
-        {
-            IList<Card> retval = target.Deck.Draw(count);
-
-            foreach (var p in _players)
+            if (c.IsAction)
             {
-                if (p.Equals(target))
-                    p.OnDrawCards(target, retval);
-                else
-                    p.OnDrawCardsNotVisible(target, count);
+                if (CurrentTurn.ActionsRemaining <= 0)
+                {
+                    CurrentTurn.Phase = Phases.Buy;
+                    throw new YouCantDoThatException("You have no actions remaining");
+                }
+                if (CurrentTurn.Phase != Phases.Action)
+                    throw new YouCantDoThatException("You can only play actions during your action phase");
+
+                CurrentTurn.ActionsRemaining--;
+                MoveCardToInPlay(c);
+                c.OnPlay(ctx);
+                return ctx.GetResults();
             }
-            return retval;
-        }
-
-        internal Card GainCard(CardCode code)
-        {
-            return GainCard(CurrentPlayer, code);           
-        }
-
-        internal Card GainCard(Player target, CardCode code)
-        {
-            if (!SupplyMan.HasSupply(code)) 
-                throw new ArgumentOutOfRangeException("Supply piles do not include " + code.ToString());
-
-            Card retval = null;
-            CardContainer pile = SupplyMan[code];
-
-            if (pile.Count > 0)
+            else if (c.IsTreasure)
             {
-                retval = pile.Draw();
+                if (CurrentTurn.Phase == Phases.Action)
+                    CurrentTurn.Phase = Phases.Buy;
+
+                if (CurrentTurn.Phase == Phases.Cleanup)
+                    throw new YouCantDoThatException("You cannot play treasures during your cleanup phase");
+
+                MoveCardToInPlay(c);
+                CurrentTurn.TreasureRemaining += c.TreasureValue;
+                c.OnPlay(ctx);
+                return ctx.GetResults();
             }
+            else
+                throw new YouCantDoThatException("You cannot play victory cards");
 
-            _players.ForEach(p => p.OnGainCard(target, code));
-            return retval;
-        }
-
-        internal void GainBuy(int count = 1)
-        {
-            _players.ForEach(p => p.OnBuyGain(count));
-            CurrentTurn.BuysRemaining += count;
-        }
-
-        internal void PlayCard(Guid cardId)
-        {
-            Card c = CardMan[cardId];
-
-            //
-            // Make sure the action can be played.  i.e. it needs to be in the players hand
-            //
-            if (!c.Container.Equals(CurrentTurn.Owner.Hand))
-                return;
-
-            _players.ForEach(p => p.OnCardPlayed(c));
-            c.OnPlay();
-        }
-
-        internal void PutCardOnDeck(Card card)
-        {
-            foreach (var p in _players)
-            {
-                if (p.Equals(CurrentPlayer))
-                    p.OnPutCardOnDeck(CurrentPlayer, card);
-                else
-                    p.OnPutCardOnDeckNotVisible(CurrentPlayer);
-            }
-            
-            CurrentPlayer.Deck.AddToTop(card);
-        }
-
-        internal void RevealHand(Player target)
-        {
-            _players.ForEach(p=> p.OnRevealHand(target, target.Hand.ToList()));
-        }
-
-        internal void ShuffleDeck(Player target)
-        {
-            target.Deck.Shuffle();
-            _players.ForEach(p=> p.OnShuffleDeck(target));
         }
         #endregion
-
-
     }
 }

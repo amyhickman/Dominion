@@ -23,6 +23,11 @@ namespace Dominion.Model
             DiscardPile = new CardContainer(this);
         }
 
+        public void PlayCard(Card c)
+        {
+            Game.PlayCard(this, c);
+        }
+
         /// <summary>
         /// Signals when a new turn starts
         /// </summary>

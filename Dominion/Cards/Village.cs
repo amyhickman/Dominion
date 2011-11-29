@@ -11,10 +11,10 @@ namespace Dominion.Cards
         public override int Cost { get { return 3; } }
         public override CardSet Set { get { return CardSet.Base; } }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.GainAction(2);
-            Game.DrawCards(1);
+            ctx.GainAction(2);
+            ctx.DrawCards(1);
         }
     }
 }

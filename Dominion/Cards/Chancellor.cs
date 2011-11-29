@@ -19,10 +19,14 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.GainTreasure(2);
-            Game.AddPendingEvent(new PendingChoice(Game.CurrentPlayer, ChoiceCode.PutDeckOnDiscardPile));
+            ctx.GainTreasure(2);
+            ctx.AddPendingEvent(new PendingChoice()
+                {
+                    Player = ctx.Actor,
+                    Choice = ChoiceCode.PutDeckOnDiscardPile
+                });
         }
     }
 }

@@ -29,10 +29,12 @@ namespace Dominion.Cards
             get { return CardSet.Base; ; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.AddPendingEvent(new PendingCardSelection(Game.CurrentPlayer, Game.CurrentPlayer.Hand.Where(c => c.IsAction).ToList())
+            ctx.AddPendingEvent(new PendingCardSelection()
                 {
+                    Player = ctx.Actor, 
+                    CardOptions = new List<Card>(ctx.Owner.Hand.Where(c => c.IsAction)),
                     IsRequired = true, 
                     MinQty = 1, 
                     MaxQty = 1, 

@@ -19,13 +19,15 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.AddPendingEvent(new PendingCardSelection(Game.CurrentPlayer, Game.CurrentPlayer.Hand)
+            ctx.AddPendingEvent(new PendingCardSelection()
             {
-               IsRequired = false,
-               MinQty = 0,
-               MaxQty = 4
+                Player = ctx.Actor,
+                CardOptions = new List<Card>(ctx.Owner.Hand),
+                IsRequired = false,
+                MinQty = 0,
+                MaxQty = 4
             });
         }
     }

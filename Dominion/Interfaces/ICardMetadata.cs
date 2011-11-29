@@ -19,7 +19,6 @@ namespace Dominion.Interfaces
         CardType Type { get; }
         IList<CardCode> RequiresInSupply { get; }
 
-        bool IsCardType(CardType t);
         bool IsVictory { get; }
         bool IsAction { get; }
         bool IsTreasure { get; }

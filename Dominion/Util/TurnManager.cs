@@ -35,7 +35,7 @@ namespace Dominion.Util
             _turns.RemoveAt(0);
 
             if (Current.IsRepeatable)
-                _turns.Add(new Turn(Current.Owner));
+                _turns.Add(new Turn(Current.Owner) { TurnNumber = Current.TurnNumber + 1 });
         }
 
         public void TakeExtraTurn(Turn turn)

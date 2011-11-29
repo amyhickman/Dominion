@@ -13,12 +13,12 @@ namespace Dominion.Cards
         public override int Cost { get { return 4; } }
         public override CardSet Set { get { return CardSet.Base; } }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            var silver = Game.GainCard(CardCode.Silver);
-            Game.PutCardOnDeck(silver);
+            var silver = ctx.GainCard(CardCode.Silver);
+            ctx.PutCardOnDeck(silver);
 
-            Game.ForEachOtherPlayer(p =>
+            ctx.ForEachOtherPlayer(p =>
                 {
                     // each other player must reveal a victory card from his hand or reveal a hand with no victory cards
                     var victoryCodes = p.Hand.Where(c=> c.IsVictory).Select(c => c.Code).Distinct().ToList();
@@ -26,14 +26,21 @@ namespace Dominion.Cards
                     switch (victoryCodes.Count)
                     {
                         case 0:
-                            Game.RevealHand(p);
+                            ctx.RevealHand(p);
                             break;
                         case 1:
-                            Game.RevealCard(p, p.Hand.Where(c => c.Code == victoryCodes[0]).FirstOrDefault());
+                            ctx.RevealCard(p, p.Hand.Where(c => c.Code == victoryCodes[0]).FirstOrDefault());
                             break;
                         default:
                             var victories = p.Hand.Where(c => victoryCodes.Contains(c.Code)).ToList();
-                            Game.AddPendingEvent(new PendingCardSelection(p, victories) { IsRequired = true, MinQty = 1, MaxQty = 1 });
+                            ctx.AddPendingEvent(new PendingCardSelection() 
+                            { 
+                                Player = p, 
+                                CardOptions = new List<Card>(victories),
+                                IsRequired = true, 
+                                MinQty = 1, 
+                                MaxQty = 1 
+                            });
                             break;
                     }
                     

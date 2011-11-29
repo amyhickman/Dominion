@@ -28,11 +28,21 @@ namespace Dominion.Model
         public int ActionsRemaining { get; set; }
         public int BuysRemaining { get; set; }
         public int TreasureRemaining { get; set; }
-        public Phases CurrentPhase { get; set; }
-        public bool IsPossessed { get { return Possessor != null; } }
+        public Phases Phase { get; set; }
         public IList<Effect> PendingEffects { get; private set; }
+
+        /// <summary>
+        /// Represents non-actual cards played, i.e. Throne Room lets you play an action 3 times.  The action would be in this list 3 times, and in the CardsPlayed list once.  
+        /// This is is cleared at the end of each turn.
+        /// </summary>
         public IList<Card> CardsInPlay { get; private set; }
+
+        /// <summary>
+        /// Represents actual cards played, one instance per card.  
+        /// At the end of the turn, these cards get moved to the discard pile.
+        /// </summary>
         public IList<Card> CardsPlayed { get; private set; }
+        public int TurnNumber { get; set; }
 
         public Turn(Player owner) 
         {
@@ -41,10 +51,11 @@ namespace Dominion.Model
             IsRepeatable = true;
             ActionsRemaining = BuysRemaining = 1;
             TreasureRemaining = 0;
-            CurrentPhase = Phases.Action;
+            Phase = Phases.Action;
             PendingEffects = new List<Effect>();
             CardsInPlay = new List<Card>();
             CardsPlayed = new List<Card>();
+            TurnNumber = 1;
         }
 
         public Turn(Player owner, Player possessor, bool isRepeatable = false) 
@@ -52,6 +63,12 @@ namespace Dominion.Model
         {
             Possessor = possessor;
             IsRepeatable = isRepeatable;
+        }
+
+        public void EndTurn()
+        {
+            CardsInPlay.Clear();
+            Owner.DiscardPile.AddRange(CardsPlayed);
         }
     }
 }

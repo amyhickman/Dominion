@@ -11,14 +11,8 @@ namespace Dominion.Model
     {
         public int MinQty { get; set; }
         public int MaxQty { get; set; }
-        public IList<Card> CardOptions { get; private set; }
+        public List<Card> CardOptions { get; set; }
         public bool IsRequired { get; set; }
-
-        public PendingCardSelection(Player player, IList<Card> cards)
-            : base(player)
-        {
-            CardOptions = new List<Card>(cards);
-        }
 
         public override bool IsSatisfiedByResponse(PendingEventResponse response)
         {

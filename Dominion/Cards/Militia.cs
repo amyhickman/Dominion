@@ -19,11 +19,13 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.GainTreasure(2);
-            Game.ForEachOtherPlayer(p => Game.AddPendingEvent(new PendingCardSelection(p, p.Hand)
+            ctx.GainTreasure(2);
+            ctx.ForEachOtherPlayer(p => ctx.AddPendingEvent(new PendingCardSelection()
             {
+                Player = p,
+                CardOptions = new List<Card>(p.Hand),
                 IsRequired = true,
                 MinQty = p.Hand.Count - 3,
                 MaxQty = p.Hand.Count - 3

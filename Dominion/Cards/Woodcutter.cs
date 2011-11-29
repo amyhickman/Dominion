@@ -18,10 +18,10 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override void OnPlay()
+        public override void OnPlay(PlayContext ctx)
         {
-            Game.GainBuy();
-            Game.GainTreasure(2);
+            ctx.GainBuy();
+            ctx.GainTreasure(2);
         }
     }
 }

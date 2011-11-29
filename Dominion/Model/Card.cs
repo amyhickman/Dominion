@@ -11,7 +11,6 @@ namespace Dominion.Model
     {
         public Guid Id { get; private set; }
         public CardContainer Container { get; set; }
-        public Game Game { get; set; }
 
         private readonly string _name;
         private readonly CardCode _code;
@@ -37,9 +36,9 @@ namespace Dominion.Model
         public bool IsCurse { get { return IsCardType(CardType.Curse); } }
         public virtual bool CanBeSupply { get { return true; } }
 
-        public virtual void OnPlay() { }
-        public virtual void OnDiscard() { }
-        public virtual void OnGain() { }
+        public virtual void OnPlay(PlayContext ctx) { }
+        public virtual void OnDiscard(PlayContext ctx) { }
+        public virtual void OnGain(PlayContext ctx) { }
 
         public Card()
         {

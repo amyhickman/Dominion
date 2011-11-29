@@ -25,10 +25,12 @@ namespace Dominion.Model
         public void Insert(int index, Card item)
         {
             _cards.Insert(index, item);
+            item.Container = this;
         }
 
         public void RemoveAt(int index)
         {
+            _cards[index].Container = null;
             _cards.RemoveAt(index);
         }
 
@@ -52,6 +54,8 @@ namespace Dominion.Model
 
         public void Clear()
         {
+            foreach (var c in _cards)
+                c.Container = null;
             _cards.Clear();
         }
 
@@ -62,7 +66,7 @@ namespace Dominion.Model
 
         public void CopyTo(Card[] array, int arrayIndex)
         {
-            _cards.CopyTo(array, arrayIndex);
+            throw new NotImplementedException();
         }
 
         public int Count
@@ -77,6 +81,7 @@ namespace Dominion.Model
 
         public bool Remove(Card item)
         {
+            item.Container = null;
             return _cards.Remove(item);
         }
 

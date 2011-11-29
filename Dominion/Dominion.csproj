@@ -31,18 +31,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper">
+      <HintPath>..\packages\AutoMapper.2.0.0\lib\net40-client\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\lib\ServiceStack-v3.08\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.ServiceInterface">
+      <HintPath>..\lib\ServiceStack-v3.08\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cards\Bureaucrat.cs" />
@@ -63,8 +65,10 @@
     <Compile Include="Cards\Witch.cs" />
     <Compile Include="Cards\Woodcutter.cs" />
     <Compile Include="Constants\ChoiceCode.cs" />
+    <Compile Include="Exceptions\YouCantDoThatException.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="Interfaces\ICardMetadata.cs" />
+    <Compile Include="Interfaces\IPlayCardResults.cs" />
     <Compile Include="Model\Card.cs" />
     <Compile Include="Constants\CardCode.cs" />
     <Compile Include="Model\CardContainer.cs" />
@@ -78,23 +82,31 @@
     <Compile Include="Model\PendingChoiceResponse.cs" />
     <Compile Include="Model\PendingEvent.cs" />
     <Compile Include="Model\PendingEventResponse.cs" />
+    <Compile Include="Model\PlayCardResults.cs" />
+    <Compile Include="Model\PlayContext.cs" />
     <Compile Include="Model\Player.cs" />
-    <Compile Include="Model\Room.cs" />
     <Compile Include="Model\Turn.cs" />
     <Compile Include="Constants\TurnPhase.cs" />
     <Compile Include="Model\PendingCardSelection.cs" />
     <Compile Include="Model\PendingCardSelectionResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceModel\CardRequest.cs" />
+    <Compile Include="ServiceModel\CardResponse.cs" />
+    <Compile Include="ServiceModel\CardService.cs" />
+    <Compile Include="ServiceModel\DominionGetServiceBase.cs" />
     <Compile Include="Util\CardDirectory.cs" />
     <Compile Include="Util\CardManager.cs" />
+    <Compile Include="Util\Engine.cs" />
     <Compile Include="Util\Extensions.cs" />
-    <Compile Include="Util\MyValidator.cs" />
     <Compile Include="Util\RNG.cs" />
     <Compile Include="Util\SuppliesManager.cs" />
     <Compile Include="Util\TurnManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Card interactions.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
