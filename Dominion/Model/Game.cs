@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Collections.ObjectModel;
 using Dominion.Util;
 using log4net;
 using System.Diagnostics;
 using Dominion.Interfaces;
 using Dominion.Constants;
-using System.Security.Principal;
 
 namespace Dominion.Model
 {
@@ -48,17 +45,7 @@ namespace Dominion.Model
         
         #region Player management
         public IList<Player> GetPlayers() { return new List<Player>(_players); }
-
-        public Player GetPlayer(IPrincipal principal)
-        {
-            foreach (var p in _players)
-            {
-                if (p.Principal.Equals(principal))
-                    return p;
-            }
-            return null;
-        }
-
+        
         private Player CurrentPossessor { get { return CurrentTurn.Possessor; } }
         public Player CurrentPlayer { get { return CurrentTurn.Owner; } }
 
@@ -97,12 +84,12 @@ namespace Dominion.Model
 
         private void SendPendingRequest(PendingCardSelection pending)
         {
-            pending.Player.Observer.OnCardSelectionRequested(pending);
+            pending.Player.OnCardSelectionRequested(pending);
         }
 
         private void SendPendingRequest(PendingChoice pending)
         {
-            pending.Player.Observer.OnChoiceRequested(pending);
+            pending.Player.OnChoiceRequested(pending);
         }
 
         #endregion
@@ -112,19 +99,19 @@ namespace Dominion.Model
         {
             foreach (var p in _players)
             {
-                p.Observer.OnRevealCard(revealer, card);
+                p.OnRevealCard(revealer, card);
             }
         }
 
         internal void GainAction(int count = 1)
         {
-            _players.ForEach(p=> p.Observer.OnActionGain(count));            
+            _players.ForEach(p=> p.OnActionGain(count));            
             CurrentTurn.ActionsRemaining += count;
         }
 
         internal void GainTreasure(int count = 1)
         {
-            _players.ForEach(p => p.Observer.OnTreasureGain(count));
+            _players.ForEach(p => p.OnTreasureGain(count));
             CurrentTurn.TreasureRemaining += count;
         }
 
@@ -140,9 +127,9 @@ namespace Dominion.Model
             foreach (var p in _players)
             {
                 if (p.Equals(target))
-                    p.Observer.OnDrawCards(target, retval);
+                    p.OnDrawCards(target, retval);
                 else
-                    p.Observer.OnDrawCardsNotVisible(target, count);
+                    p.OnDrawCardsNotVisible(target, count);
             }
             return retval;
         }
@@ -165,13 +152,13 @@ namespace Dominion.Model
                 retval = pile.Draw();
             }
 
-            _players.ForEach(p => p.Observer.OnGainCard(target, code));
+            _players.ForEach(p => p.OnGainCard(target, code));
             return retval;
         }
 
         internal void GainBuy(int count = 1)
         {
-            _players.ForEach(p => p.Observer.OnBuyGain(count));
+            _players.ForEach(p => p.OnBuyGain(count));
             CurrentTurn.BuysRemaining += count;
         }
 
@@ -185,7 +172,7 @@ namespace Dominion.Model
             if (!c.Container.Equals(CurrentTurn.Owner.Hand))
                 return;
 
-            _players.ForEach(p => p.Observer.OnCardPlayed(c));
+            _players.ForEach(p => p.OnCardPlayed(c));
             c.OnPlay();
         }
 
@@ -194,9 +181,9 @@ namespace Dominion.Model
             foreach (var p in _players)
             {
                 if (p.Equals(CurrentPlayer))
-                    p.Observer.OnPutCardOnDeck(CurrentPlayer, card);
+                    p.OnPutCardOnDeck(CurrentPlayer, card);
                 else
-                    p.Observer.OnPutCardOnDeckNotVisible(CurrentPlayer);
+                    p.OnPutCardOnDeckNotVisible(CurrentPlayer);
             }
             
             CurrentPlayer.Deck.AddToTop(card);
@@ -204,13 +191,13 @@ namespace Dominion.Model
 
         internal void RevealHand(Player target)
         {
-            _players.ForEach(p=> p.Observer.OnRevealHand(target, target.Hand.ToList()));
+            _players.ForEach(p=> p.OnRevealHand(target, target.Hand.ToList()));
         }
 
         internal void ShuffleDeck(Player target)
         {
             target.Deck.Shuffle();
-            _players.ForEach(p=> p.Observer.OnShuffleDeck(target));
+            _players.ForEach(p=> p.OnShuffleDeck(target));
         }
         #endregion
 

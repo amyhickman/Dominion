@@ -65,13 +65,11 @@
     <Compile Include="Constants\ChoiceCode.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="Interfaces\ICardMetadata.cs" />
-    <Compile Include="Interfaces\IGameObserver.cs" />
     <Compile Include="Model\Card.cs" />
     <Compile Include="Constants\CardCode.cs" />
     <Compile Include="Model\CardContainer.cs" />
     <Compile Include="Model\CardSet.cs" />
     <Compile Include="Constants\CardType.cs" />
-    <Compile Include="Util\DummyObserver.cs" />
     <Compile Include="Model\Effect.cs" />
     <Compile Include="Model\Game.cs" />
     <Compile Include="Model\GameSetup.cs" />

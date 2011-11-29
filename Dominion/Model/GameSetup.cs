@@ -15,8 +15,7 @@ namespace Dominion.Model
             CardCode.Gold, CardCode.Silver, CardCode.Copper
         };
 
-        public IList<Player> Players { get; private set; }
-        public IList<Player> Watchers { get; private set; }
+        private IList<Player> Players { get; set; }
         public IList<CardCode> DesiredSupplies { get; private set; }
         public IList<CardCode> UndesiredSupplies { get; private set; }
         public IList<CardSet> DesiredSets { get; private set; }
@@ -27,7 +26,16 @@ namespace Dominion.Model
             DesiredSupplies = new List<CardCode>();
             UndesiredSupplies = new List<CardCode>();
             DesiredSets = new List<CardSet>();
-            Watchers = new List<Player>();
+        }
+
+        public void AddPlayer(Player p)
+        {
+            if (p == null)
+                throw new ArgumentNullException("p");
+            if (p.Game != null)
+                throw new InvalidOperationException("This player is already associated with a game");
+
+            Players.Add(p);
         }
 
         public IList<CardCode> GenerateRandomSupplies()
