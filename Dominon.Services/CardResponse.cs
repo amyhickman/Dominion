@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Dominion
+namespace Dominon.Services
 {
-    public class Class1
+    class CardResponse
     {
     }
 }

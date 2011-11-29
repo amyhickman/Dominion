@@ -62,7 +62,6 @@
     <Compile Include="Cards\Village.cs" />
     <Compile Include="Cards\Witch.cs" />
     <Compile Include="Cards\Woodcutter.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="Interfaces\IChatServer.cs" />
     <Compile Include="Interfaces\IDominionServer.cs" />
