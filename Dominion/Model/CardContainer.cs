@@ -8,11 +8,13 @@ namespace Dominion.Model
 {
     public class CardContainer : IList<Card>
     {
-        public int ContainerId { get; set; }
-        public int OwnerId { get; set; }
-
-
+        public Player Owner { get; private set; }
         private List<Card> _cards = new List<Card>();
+
+        public CardContainer(Player owner)
+        {
+            Owner = owner;
+        }
 
         #region IList<Card>
         public int IndexOf(Card item)
@@ -94,24 +96,23 @@ namespace Dominion.Model
             AddToTop(item);
         }
 
-        public void Shuffle()
-        {
-            lock (_cards)
-            {
-                for (int i = _cards.Count - 1; i > 0; i--)
-                {
-                    int k = RNG.Next(0, i);
-                    Card tmp = _cards[k];
-                    _cards[k] = _cards[i];
-                    _cards[i] = tmp;
-                }
-            }
-        }
-
         public Card Draw()
         {
+            if (_cards.Count == 0)
+                return null;
+
             Card retval = _cards[_cards.Count - 1];
             _cards.RemoveAt(_cards.Count - 1);
+            return retval;
+        }
+
+        public IList<Card> Draw(int count)
+        {
+            if (_cards.Count == 0)
+                return new List<Card>();
+
+            List<Card> retval = new List<Card>(_cards.Take(count));
+            _cards.RemoveRange(0, retval.Count);
             return retval;
         }
 

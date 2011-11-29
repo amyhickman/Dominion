@@ -14,6 +14,7 @@ using Dominion.Model;
 using Dominion.Util;
 using System.Threading;
 using Dominion.Interfaces;
+using Dominion.Constants;
 
 namespace ConsoleTesting
 {
@@ -88,6 +89,26 @@ namespace ConsoleTesting
             Console.WriteLine("Gains {0} actions", obj);
         }
 
+        public void OnDrawCardsNotVisible(Player drawingPlayer, int count)
+        {
+            Console.WriteLine("{0} draws {1} cards", drawingPlayer.Nickname, count);
+        }
+
+        public void OnPutCardOnDeckNotVisible(Player player)
+        {
+            Console.WriteLine("{0} put a card on his deck", player.Nickname);
+        }
+
+        public void OnCardSelectionRequested(PendingCardSelection pendingSelection)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public void OnChoiceRequested(PendingChoice choice)
+        {
+            throw new NotImplementedException();
+        }
     }
     class Program
     {
@@ -96,16 +117,15 @@ namespace ConsoleTesting
         {
             var events = typeof(Game).GetEvents();
 
-            Player me = new Player(Thread.CurrentPrincipal);
-            Player you = new Player(Thread.CurrentPrincipal);
+            Player me = new Player(Thread.CurrentPrincipal, new GameObserver());
+            Player you = new Player(Thread.CurrentPrincipal, new GameObserver());
             me.Nickname = "Jason";
             you.Nickname = "Jennifer";
 
-            Game game = new Game();
-            game.Observer = new GameObserver();
-            game.AddPlayer(me);
-            game.AddPlayer(you);
-
+            GameSetup setup = new GameSetup();
+            setup.Players.Add(me);
+            setup.Players.Add(you);
+            
             foreach (var c in new CardCode[] 
             { 
                 CardCode.Bureaucrat, CardCode.Cellar, 
@@ -114,9 +134,12 @@ namespace ConsoleTesting
                 CardCode.Witch, CardCode.Woodcutter ,
                 CardCode.ThroneRoom, CardCode.Chapel
             })
-                
-            game.AddSupply(c);
-            game.StartGame();
+            {
+                setup.DesiredSupplies.Add(c);
+            }
+
+            Game g = setup.CreateGame();
+            
         }
 
     }

@@ -1,0 +1,63 @@
+﻿
+Information retrieval:
+
+		/game/list												- Returns a list of active games metadata (game id, players, turn#, etc)
+		/player/list											- Gets a list of online players
+		/room/list												- Gets a list of rooms
+		/room/{roomId}/playerList								- Gets a list of players in a room
+		/room/{roomId}											- Gets information about a room
+		/player/{playerId}										- Gets information about a player
+
+		/game/{gameId}											- returns everything known about the game that the requesting player should know.
+		/game/{gameId}/viewLog/{startingLogId}					- Returns the game log starting with the indicated log message id (optiona)l
+		/game/{gameId}/hand{playerId}							- Returns the players hand, if the requestor has any business knowing it.  If not, throws some error
+					  /card/{cardId}							- Returns information about the card, if the requestor has any business knowing it.  If not, throws some error
+					  /player/{playerId}						- Returns information about the player
+					  /discardPile/{playerId}					- Returns information about the player's discard pile
+					  /deck/{playerId}							- Returns information about the player's deck
+					  /turn										- Returns information about the current turn
+					  /supplies									- Returns information on the supply piles
+
+Game play:
+
+		/game/{gameId}/play/{cardId}							- Plays the card specified by {cardId}, if the player has the ability to play that card.  If not, throws some error
+					  /discard/{cardId}							- Discards the card specified by {cardId}, if the player has the ability to discard that card.  If not, throws some error.
+					  /trash/{cardId}							- Trashes the card specified by {cardId}, if the player has the ability to trash that card.  If not, throws some error.
+					  /draw/{count} 							- Draws {count} cards from the players deck, if the player has the ability to do so.  If not, throws some error.
+					  /endTurn									- Arbitrarily ends the current player's turn.  Can only be called by the current player.  Otherwise, throws some error.
+					  /revealCard/{cardId}						- Reveals the card specified by {cardId} to all players, if the player can do that.
+					  /revealCard/{cardId}/to/{playerId}		- Reveals the card specified by {cardId} to the player specified by {playerId}, if the player can do that.
+					  /revealHand								- Reveals the players entire hand to all players
+					  /revealHandto/{playerId}					- Reveals the players entire hand to the player specified by {playerId}
+					  /gainCard/{cardCode}						- Gains the specified card from one of the supply piles
+					  /resign									- Instantly resigns from the game
+
+Setting up a game:
+
+		/game/create											- Creates a new game.  Allows other players to join the game.  Redirects to game page.
+		/game/{gameId}/join										- Joins a game, if it is not currently in progress, or if it is in progress and the user got disconnected.  Redirects to game page.
+					  /watch									- Watches a game as an outside observer.  Redirects to game page.
+					  /leave									- If watching the game, stops watching it.  If a player, throws an error.
+					  /destroy									- ADMIN - Ends the game.  Now.
+		              /start									- Starts the game once more than 1 person has joined and supply piles are ready.
+		              /propose/{playerIdList}					- Creates a new game.  Invites players to that game.
+		              /invite/{playerId}						- Invites a player to join
+					  /chooseSupplies/{cardCodeList}			- For games that have not started, choose supplies.
+					  /proposeRandomSupplies/{constraints}		- For games that have not started, propose random supplies following the provided constraints, whatever *those* might be (dunno)
+					  /vetoSupply/{cardCode}					- Vetoes a supply
+
+Chatting:
+
+
+		/room/create/{name}										- Creates a room called {name}
+		/room/{roomId}/chat/{text}								- Makes a chat message to a room.
+		/room/{roomId}/join										- Joins the room specified by {roomId}
+		/room/{roomId}/leave									- Leaves the room
+		/room/{roomId}/report{reason}							- Reports room activity to a moderator.
+		/room/{roomId}/destroy									- ADMIN or room owner: destroys the room immediately.
+		/game/{gameId}/chat/{text}								- Makes a chat message.  If by a player, then to the players and observers.  If by an observer, then only to the observers
+		
+		/player/{playerId}/chat/{text}							- Sends a private message to a player
+		/player/{playerId}/ignore/{true/false}					- If true, ignores the player indicated by {playerId}.  If false, unignores the player.
+		/player/{playerId}/report/{reason}						- Reports the player for whatever reason to the mods
+		

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Dominion.Model;
+using Dominion.Constants;
 
 namespace Dominion.Interfaces
 {
@@ -60,6 +61,13 @@ namespace Dominion.Interfaces
         void OnDrawCards(Player drawingPlayer, IList<Card> drawnCards);
 
         /// <summary>
+        /// Signals when a player has drawn some cards, but those cards are not visible
+        /// </summary>
+        /// <param name="drawingPlayer"></param>
+        /// <param name="count"></param>
+        void OnDrawCardsNotVisible(Player drawingPlayer, int count);
+
+        /// <summary>
         /// Signals when a player gains a card
         /// </summary>
         /// <param name="gainingPlayer">The player gaining the card</param>
@@ -80,6 +88,12 @@ namespace Dominion.Interfaces
         void OnPutCardOnDeck(Player player, Card cardOnDeck);
 
         /// <summary>
+        /// Signals when a player puts a card on his/her deck but that card is not visible
+        /// </summary>
+        /// <param name="player"></param>
+        void OnPutCardOnDeckNotVisible(Player player);
+
+        /// <summary>
         /// Signals when a player shuffles his deck
         /// </summary>
         /// <param name="shuffler">The player doing the shuffling</param>
@@ -91,5 +105,18 @@ namespace Dominion.Interfaces
         /// <param name="possessingPlayer">The player who is doing the possessing</param>
         /// <param name="possessedPlayer">The possessed</param>
         void OnPossessedTurnStart(Player possessingPlayer, Player possessedPlayer);
+
+        /// <summary>
+        /// Signals when a player needs to select some cards from a list of options
+        /// </summary>
+        /// <param name="pendingSelection">The cards available to choose from and how many need to be chosen</param>
+        void OnCardSelectionRequested(PendingCardSelection pendingSelection);
+        
+        /// <summary>
+        /// Signals when a player needs to make a yes/no decision
+        /// </summary>
+        /// <param name="choosingPlayer">The player making the decision</param>
+        /// <param name="choice">The description of the choice being made</param>
+        void OnChoiceRequested(PendingChoice choice);
     }
 }

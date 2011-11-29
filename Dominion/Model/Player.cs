@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Security.Principal;
+using Dominion.Interfaces;
 
 namespace Dominion.Model
 {
@@ -17,23 +18,20 @@ namespace Dominion.Model
         public int Id { get; set; }
         public int VictoryPoints { get; set; }
 
-        public Player(IPrincipal principal)
+        public Player(IPrincipal principal, IGameObserver observer)
         {
+            if (principal == null)
+                throw new ArgumentNullException("principal");
+            if (observer == null)
+                throw new ArgumentNullException("observer");
+
             Principal = principal;
-            Hand = new CardContainer();
-            Deck = new CardContainer();
-            DiscardPile = new CardContainer();
+            Observer = observer;
+            Hand = new CardContainer(this);
+            Deck = new CardContainer(this);
+            DiscardPile = new CardContainer(this);
         }
 
-
-        internal void RevealCard(Card card)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void RevealHand()
-        {
-            throw new NotImplementedException();
-        }
+        public IGameObserver Observer { get; private set; }
     }
 }

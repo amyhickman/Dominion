@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Dominion.Interfaces;
+using Dominion.Constants;
 
 namespace Dominion.Model
 {
-    public abstract class Card
+    public abstract class Card : ICardMetadata
     {
-        public int Id { get; set; }
+        public Guid Id { get; private set; }
         public CardContainer Container { get; set; }
         public Game Game { get; set; }
 
@@ -22,7 +24,7 @@ namespace Dominion.Model
         public virtual Uri ImageSource { get { return null; } }
         public abstract CardSet Set { get; }
         public virtual CardType Type { get { return CardType.Action; } }
-        public virtual bool RequiresCurseSupply { get { return false; } }
+        public virtual IList<CardCode> RequiresInSupply { get { return new List<CardCode>(); } }
 
         public bool IsCardType(CardType t)
         {
@@ -43,6 +45,7 @@ namespace Dominion.Model
         {
             _name = this.GetType().Name;
             _code = (CardCode)Enum.Parse(typeof(CardCode), _name);
+            Id = Guid.NewGuid();
         }
     }
 }

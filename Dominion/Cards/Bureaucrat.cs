@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
-using Dominion.PendingEventModel;
+using Dominion.Constants;
 
 
 namespace Dominion.Cards
@@ -29,11 +29,11 @@ namespace Dominion.Cards
                             Game.RevealHand(p);
                             break;
                         case 1:
-                            Game.RevealCard(p.Hand.Where(c => c.Code == victoryCodes[0]).FirstOrDefault());
+                            Game.RevealCard(p, p.Hand.Where(c => c.Code == victoryCodes[0]).FirstOrDefault());
                             break;
                         default:
                             var victories = p.Hand.Where(c => victoryCodes.Contains(c.Code)).ToList();
-                            Game.AddPendingAction(new RevealACard(p, victories, 1));
+                            Game.AddPendingEvent(new PendingCardSelection(p, victories) { IsRequired = true, MinQty = 1, MaxQty = 1 });
                             break;
                     }
                     

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
+using Dominion.Constants;
 
 namespace Dominion.Cards
 {
@@ -18,9 +19,9 @@ namespace Dominion.Cards
             get { return CardSet.Base; }
         }
 
-        public override bool RequiresCurseSupply
+        public override IList<CardCode>  RequiresInSupply
         {
-            get { return true; }
+            get { return new List<CardCode>() { CardCode.Curse }; }
         }
 
         public override void OnPlay()
@@ -30,15 +31,12 @@ namespace Dominion.Cards
             //
             // each other player gains a curse card
             //
-            foreach (var p in Game.Players)
+            Game.ForEachOtherPlayer(p =>
             {
-                if (p.Equals(Game.CurrentPlayer))
-                    continue;
-
                 Card curse = Game.GainCard(p, CardCode.Curse);
                 if (curse != null)
                     p.DiscardPile.Add(curse);
-            }
+            });
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Dominion.Constants;
 
 namespace Dominion.Model
 {
@@ -29,7 +30,9 @@ namespace Dominion.Model
         public int TreasureRemaining { get; set; }
         public Phases CurrentPhase { get; set; }
         public bool IsPossessed { get { return Possessor != null; } }
-        public List<Effect> PendingEffects { get; private set; }
+        public IList<Effect> PendingEffects { get; private set; }
+        public IList<Card> CardsInPlay { get; private set; }
+        public IList<Card> CardsPlayed { get; private set; }
 
         public Turn(Player owner) 
         {
@@ -40,6 +43,8 @@ namespace Dominion.Model
             TreasureRemaining = 0;
             CurrentPhase = Phases.Action;
             PendingEffects = new List<Effect>();
+            CardsInPlay = new List<Card>();
+            CardsPlayed = new List<Card>();
         }
 
         public Turn(Player owner, Player possessor, bool isRepeatable = false) 

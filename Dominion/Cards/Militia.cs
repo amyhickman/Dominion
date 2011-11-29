@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
-using Dominion.PendingEventModel;
+using Dominion.Constants;
 
 namespace Dominion.Cards
 {
@@ -22,7 +22,12 @@ namespace Dominion.Cards
         public override void OnPlay()
         {
             Game.GainTreasure(2);
-            Game.ForEachOtherPlayer(p => Game.AddPendingAction(new DiscardDownToNCards() { Count = 3, Player = p, IsRequired = true }));
+            Game.ForEachOtherPlayer(p => Game.AddPendingEvent(new PendingCardSelection(p, p.Hand)
+            {
+                IsRequired = true,
+                MinQty = p.Hand.Count - 3,
+                MaxQty = p.Hand.Count - 3
+            }));
         }
     }
 }

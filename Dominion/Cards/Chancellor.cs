@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Dominion.Model;
-using Dominion.PendingEventModel;
+using Dominion.Constants;
 
 namespace Dominion.Cards
 {
@@ -22,7 +22,7 @@ namespace Dominion.Cards
         public override void OnPlay()
         {
             Game.GainTreasure(2);
-            Game.AddPendingAction(new PutDeckOnDiscardPile(Game.CurrentPlayer, false)); // you may put your deck on your discard pile
+            Game.AddPendingEvent(new PendingChoice(Game.CurrentPlayer, ChoiceCode.PutDeckOnDiscardPile));
         }
     }
 }

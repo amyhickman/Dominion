@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Dominion.Interfaces;
+using Dominion.Constants;
+using Dominion.Model;
 
-namespace Dominion.Model
+namespace Dominion.Util
 {
     public class DummyObserver : IGameObserver
     {
@@ -33,5 +35,13 @@ namespace Dominion.Model
         public void OnShuffleDeck(Player shuffler) { }
 
         public void OnPossessedTurnStart(Player possessingPlayer, Player possessedPlayer) { }
+
+        public void OnDrawCardsNotVisible(Player drawingPlayer, int count) { }
+
+        public void OnPutCardOnDeckNotVisible(Player player) { }
+
+        public void OnCardSelectionRequested(PendingCardSelection pendingSelection) { }
+
+        public void OnChoiceRequested(PendingChoice choice) { }
     }
 }
