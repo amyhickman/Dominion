@@ -12,53 +12,21 @@ namespace Dominion.Util
 {
     public static class CardDirectory
     {
-        private class CardMetadata
+        private static readonly Dictionary<CardSet, List<CardCode>> _cardsInSet = new Dictionary<CardSet, List<CardCode>>();
+        private static readonly Dictionary<CardSet, List<CardCode>> _suppliesInSet = new Dictionary<CardSet, List<CardCode>>();
+        private static readonly Dictionary<CardCode, Func<Card>> _cards = new Dictionary<CardCode, Func<Card>>();
+
+        public static IList<CardCode> GetSuppliesInSet(CardSet set)
         {
-            public Func<Card> Factory { get; set; }
-            public ICardMetadata Meta { get; set; }
+            if (_suppliesInSet.ContainsKey(set))
+                return new List<CardCode>(_suppliesInSet[set]);
 
-            public CardMetadata(Card c, Func<Card> fact) { Factory = fact; Meta = c; }
-        }
-
-        private class Setmeta
-        {
-            public List<ICardMetadata> Supplies { get; set; }
-            public List<ICardMetadata> Cards { get; set; }
-
-            public Setmeta()
-            {
-                Supplies = new List<ICardMetadata>();
-                Cards = new List<ICardMetadata>();
-            }
-        }
-
-        private static readonly Dictionary<CardSet, Setmeta> _sets = new Dictionary<CardSet, Setmeta>();
-        private static readonly Dictionary<CardCode, CardMetadata> _cards = new Dictionary<CardCode, CardMetadata>();
-
-        public static IList<ICardMetadata> GetCardsInSet(CardSet set)
-        {
-            if (_sets.ContainsKey(set))
-                return new List<ICardMetadata>(_sets[set].Cards);
-
-            return new List<ICardMetadata>();
-        }
-
-        public static ICardMetadata GetCardMeta(CardCode code)
-        {
-            return _cards[code].Meta;
-        }
-
-        public static IList<ICardMetadata> GetSuppliesInSet(CardSet set)
-        {
-            if (_sets.ContainsKey(set))
-                return new List<ICardMetadata>(_sets[set].Supplies);
-
-            return new List<ICardMetadata>();
+            return new List<CardCode>();
         }
 
         public static Card CreateCard(CardCode code)
         {
-            return _cards[code].Factory();
+            return _cards[code]();
         }
 
         public static IList<Card> CreateCards(IEnumerable<CardCode> codes)
@@ -93,19 +61,25 @@ namespace Dominion.Util
                 var lambda = Expression.Lambda<Func<Card>>(ciEx);
                 var factory = lambda.Compile();
                 var card = factory();
-                _cards.Add(card.Code, new CardMetadata(card, factory));
+                _cards.Add(card.Code, factory);
 
                 Card c = factory();
+                List<CardCode> codes;
 
-                Setmeta meta;
-                if (!_sets.TryGetValue(c.Set, out meta))
+                if (!_cardsInSet.TryGetValue(c.Set, out codes))
                 {
-                    _sets.Add(c.Set, meta = new Setmeta());
+                    _cardsInSet.Add(c.Set, codes = new List<CardCode>());
                 }
-                meta.Cards.Add(c);
+                codes.Add(c.Code);
 
                 if (c.CanBeSupply)
-                    meta.Supplies.Add(c);
+                {
+                    if (!_suppliesInSet.TryGetValue(c.Set, out codes))
+                    {
+                        _suppliesInSet.Add(c.Set, codes = new List<CardCode>());
+                    }
+                    codes.Add(c.Code);
+                }
             }
         }
     }

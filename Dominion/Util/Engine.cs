@@ -25,7 +25,6 @@ namespace Dominion.Util
 
                 _isInited = true;
 
-                Mapper.CreateMap<ICardMetadata, CardInfo>();
             }
         }
     }

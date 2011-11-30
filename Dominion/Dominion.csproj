@@ -63,7 +63,6 @@
     <Compile Include="Constants\ChoiceCode.cs" />
     <Compile Include="Exceptions\YouCantDoThatException.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
-    <Compile Include="Interfaces\ICardMetadata.cs" />
     <Compile Include="Interfaces\IPlayCardResults.cs" />
     <Compile Include="Model\Card.cs" />
     <Compile Include="Constants\CardCode.cs" />

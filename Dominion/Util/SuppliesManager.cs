@@ -48,7 +48,7 @@ namespace Dominion.Util
 
         public void AddSupply(CardCode code)
         {
-            if (!CardDirectory.GetCardMeta(code).CanBeSupply)
+            if (!CardDirectory.CreateCard(code).CanBeSupply)
                 throw new InvalidOperationException("Card " + code.ToString() + " cannot be used as a supply.");
 
             if (_supplies.ContainsKey(code))

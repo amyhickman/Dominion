@@ -43,7 +43,7 @@ namespace Dominion.Model
             var effectiveDesiredSets = new List<CardSet>(DesiredSets.Count > 0 ? DesiredSets : (CardSet[])Enum.GetValues(typeof(CardSet)));
             
             var candidates = new List<CardCode>(effectiveDesiredSets
-                .SelectMany(set => CardDirectory.GetSuppliesInSet(set).Select(meta=> meta.Code))
+                .SelectMany(set => CardDirectory.GetSuppliesInSet(set))
                 .Except(UndesiredSupplies))
                 .Shuffle()
                 .Take(10);
@@ -53,7 +53,7 @@ namespace Dominion.Model
 
         private IList<CardCode> GetRequiredAdditionalSupplies(IList<CardCode> supplies)
         {
-            return supplies.SelectMany(code => CardDirectory.GetCardMeta(code).RequiresInSupply)
+            return supplies.SelectMany(code => CardDirectory.CreateCard(code).RequiresInSupply)
                 .Distinct()
                 .ToList();
         }

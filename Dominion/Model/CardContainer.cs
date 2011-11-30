@@ -10,6 +10,10 @@ namespace Dominion.Model
     {
         public Player Owner { get; private set; }
         private List<Card> _cards = new List<Card>();
+
+        /// <summary>
+        /// When the 1`
+        /// </summary>
         public bool MakeCardsHiddenOnInsert { get; set; }
 
         public CardContainer(Player owner)

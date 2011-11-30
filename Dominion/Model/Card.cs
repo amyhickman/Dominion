@@ -7,7 +7,7 @@ using Dominion.Constants;
 
 namespace Dominion.Model
 {
-    public abstract class Card : ICardMetadata
+    public abstract class Card
     {
         public Guid Id { get; set; }
         public CardContainer Container { get; set; }
