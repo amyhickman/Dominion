@@ -10,10 +10,12 @@ namespace Dominion.Model
     {
         public Player Owner { get; private set; }
         private List<Card> _cards = new List<Card>();
+        public bool MakeCardsHiddenOnInsert { get; set; }
 
         public CardContainer(Player owner)
         {
             Owner = owner;
+            MakeCardsHiddenOnInsert = false;
         }
 
         #region IList<Card>
@@ -25,6 +27,7 @@ namespace Dominion.Model
         public void Insert(int index, Card item)
         {
             _cards.Insert(index, item);
+            
             item.Container = this;
         }
 

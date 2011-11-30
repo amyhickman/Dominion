@@ -9,7 +9,7 @@ namespace Dominion.Model
 {
     public abstract class Card : ICardMetadata
     {
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
         public CardContainer Container { get; set; }
 
         private readonly string _name;

@@ -28,6 +28,16 @@ namespace Dominion.Model
             Game.PlayCard(this, c);
         }
 
+        public void ChooseCards(PendingCardSelectionResponse response)
+        {
+            Game.ReceivePendingEventResponse(response);
+        }
+
+        public void MakeDecision(PendingChoiceResponse response)
+        {
+            Game.ReceivePendingEventResponse(response);
+        }
+
         /// <summary>
         /// Signals when a new turn starts
         /// </summary>

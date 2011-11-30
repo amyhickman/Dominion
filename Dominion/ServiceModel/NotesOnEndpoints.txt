@@ -1,7 +1,6 @@
-﻿
-Information retrieval:
+﻿Asterisk in left column means model is complete.
 
-		/card/{code}											- Returns metadata information about a card type (i.e. Village)
+*		/card/{code}											- Returns metadata information about a card type (i.e. Village)
 		/game/list												- Returns a list of active games metadata (game id, players, turn#, etc)
 		/player/list											- Gets a list of online players
 		/room/list												- Gets a list of rooms
@@ -18,8 +17,6 @@ Information retrieval:
 					  /deck/{playerId}							- Returns information about the player's deck
 					  /turn										- Returns information about the current turn
 					  /supplies									- Returns information on the supply piles
-
-Game play:
 
 		/game/{gameId}/play/{cardId}							- Plays the card specified by {cardId}, if the player has the ability to play that card.  If not, throws some error
 					  /discard/{cardId}							- Discards the card specified by {cardId}, if the player has the ability to discard that card.  If not, throws some error.

@@ -16,10 +16,9 @@ namespace Dominion.Model
 
         private readonly List<Player> _players = new List<Player>();
         private readonly bool _started = false;
-        private readonly CardManager CardMan;
         private readonly SuppliesManager SupplyMan;
         private readonly TurnManager TurnMan;
-        private readonly Dictionary<Guid, PendingEvent> _pending = new Dictionary<Guid, PendingEvent>();
+        private readonly PendingEventsManager PendingMan;
 
         private Turn CurrentTurn { get { return TurnMan.Current; } }
         private readonly object _lck = new object();
@@ -29,14 +28,14 @@ namespace Dominion.Model
         {
             _players.AddRange(players);
 
-            CardMan = new CardManager(this);
-            SupplyMan = new SuppliesManager(this, CardMan, supplies);
+            SupplyMan = new SuppliesManager(this, supplies);
             TurnMan = new TurnManager(this, true);
+            PendingMan = new PendingEventsManager(this);
 
             foreach (var p in _players)
             {
-                p.Deck.AddRange(CardMan.CreateCards(CardCode.Copper, 7));
-                p.Deck.AddRange(CardMan.CreateCards(CardCode.Estate, 3));
+                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Copper, 7));
+                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Estate, 3));
                 p.Deck.Shuffle();
                 p.Hand.AddRange(p.Deck.Draw(5));
             }
@@ -66,40 +65,6 @@ namespace Dominion.Model
         }
         #endregion
 
-        #region Game event management
-        internal void AddPendingEvent(PendingEvent pending)
-        {
-            _pending.Add(pending.Id, pending);
-        }
-        
-        private void ReceivePendingEventResponse(PendingEventResponse response)
-        {
-            PendingEvent request = _pending[response.PendingEventId];
-
-            if (request.IsSatisfiedByResponse(response))
-                request.OnResponse(response);
-            else if (request is PendingCardSelection)
-            {
-                SendPendingRequest((PendingCardSelection)request);
-            }
-            else if (request is PendingChoice)
-            {
-                SendPendingRequest((PendingChoice)request);
-            }
-        }
-
-        private void SendPendingRequest(PendingCardSelection pending)
-        {
-            pending.Player.OnCardSelectionRequested(pending);
-        }
-
-        private void SendPendingRequest(PendingChoice pending)
-        {
-            pending.Player.OnChoiceRequested(pending);
-        }
-
-        #endregion
-
         private PlayContext CreatePlayContext()
         {
             return new PlayContext(this, CurrentTurn, SupplyMan);
@@ -112,8 +77,22 @@ namespace Dominion.Model
             CurrentTurn.CardsInPlay.Add(c);
         }
 
+        public void AddPendingEvent(PendingEvent pending)
+        {
+            // TODO: Yes, this is not thread-safe in the least.  I know, shut up.  
+            PendingMan.AddPendingEvent(pending);
+        }
+
+        public void ReceivePendingEventResponse(PendingEventResponse response)
+        {
+            // TODO: Yes, this is not thread-safe in the least.  Will fix later.
+            // TODO: I would *love* to hook C#5 continuations in with this...
+
+            PendingMan.ReceivePendingEventResponse(response);
+        }
+
         #region PlayCard
-        public IPlayCardResults PlayCard(Player player, Card c)
+        internal IPlayCardResults PlayCard(Player player, Card c)
         {
             lock (_lck)
             {

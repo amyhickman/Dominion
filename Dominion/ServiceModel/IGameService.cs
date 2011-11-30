@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Dominion.Constants;
+using System.ServiceModel.Web;
+using System.ServiceModel;
 
 namespace Dominion.ServiceModel
 {
-    public class CardRequest
+    [ServiceContract]
+    public interface IGameService
     {
-        public CardCode Code { get; set; }
+        
     }
 }

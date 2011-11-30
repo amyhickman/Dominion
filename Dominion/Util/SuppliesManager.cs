@@ -15,12 +15,10 @@ namespace Dominion.Util
         private readonly Dictionary<CardCode, CardContainer> _supplies = new Dictionary<CardCode, CardContainer>();
 
         public Game Game { get; private set; }
-        private CardManager _cardFactory;
 
-        public SuppliesManager(Game game, CardManager factory, IList<CardCode> supplies)
+        public SuppliesManager(Game game, IList<CardCode> supplies)
         {
             Game = game;
-            _cardFactory = factory;
         }
 
         private void CreateSupplyPile(CardCode code)
@@ -41,7 +39,7 @@ namespace Dominion.Util
 
             for (int i = 0; i < quantity; i++)
             {
-                Card card = _cardFactory.CreateCard(code);
+                Card card = CardDirectory.CreateCard(code);
                 pile.Add(card);
             }
 

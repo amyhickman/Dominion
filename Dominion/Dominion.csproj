@@ -37,14 +37,10 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\lib\ServiceStack-v3.08\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.ServiceInterface">
-      <HintPath>..\lib\ServiceStack-v3.08\ServiceStack.ServiceInterface.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cards\Bureaucrat.cs" />
@@ -90,14 +86,12 @@
     <Compile Include="Model\PendingCardSelection.cs" />
     <Compile Include="Model\PendingCardSelectionResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceModel\CardRequest.cs" />
-    <Compile Include="ServiceModel\CardResponse.cs" />
-    <Compile Include="ServiceModel\CardService.cs" />
-    <Compile Include="ServiceModel\DominionGetServiceBase.cs" />
+    <Compile Include="ServiceModel\CardInfo.cs" />
+    <Compile Include="ServiceModel\IGameService.cs" />
     <Compile Include="Util\CardDirectory.cs" />
-    <Compile Include="Util\CardManager.cs" />
     <Compile Include="Util\Engine.cs" />
     <Compile Include="Util\Extensions.cs" />
+    <Compile Include="Util\PendingEventsManager.cs" />
     <Compile Include="Util\RNG.cs" />
     <Compile Include="Util\SuppliesManager.cs" />
     <Compile Include="Util\TurnManager.cs" />

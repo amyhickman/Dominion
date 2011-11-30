@@ -69,6 +69,17 @@ namespace Dominion.Util
             return retval;
         }
 
+        public static IList<Card> CreateCards(CardCode code, int count)
+        {
+            List<Card> retval = new List<Card>();
+            while (count > 0)
+            {
+                retval.Add(CreateCard(code));
+                count--;
+            }
+            return retval;
+        }
+
         static CardDirectory()
         {
             Assembly assembly = typeof(Card).Assembly;

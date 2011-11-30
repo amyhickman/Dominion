@@ -8,7 +8,7 @@ using Dominion.Model;
 
 namespace Dominion.ServiceModel
 {
-    public class CardResponse
+    public class CardInfo
     {
         public string Name { get; set; }
         public CardCode Code { get; set; }
