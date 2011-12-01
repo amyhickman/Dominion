@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Dominion.Model
 {
-    public class PendingChoiceResponse : PendingEventResponse
+    public class PendingDecisionResponse : PendingEventResponse
     {
-        public PendingChoiceResponse(Guid pendingEventId, bool declined)
+        public PendingDecisionResponse(Guid pendingEventId, bool declined)
             : base(pendingEventId)
         {
             Declined = declined;

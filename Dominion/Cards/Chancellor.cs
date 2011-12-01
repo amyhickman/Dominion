@@ -22,10 +22,10 @@ namespace Dominion.Cards
         public override void OnPlay(PlayContext ctx)
         {
             ctx.GainTreasure(2);
-            ctx.AddPendingEvent(new PendingChoice()
+            ctx.AddPendingEvent(new PendingDecision()
                 {
                     Player = ctx.Actor,
-                    Choice = ChoiceCode.PutDeckOnDiscardPile
+                    Choice = DecisionCode.PutDeckOnDiscardPile
                 });
         }
     }

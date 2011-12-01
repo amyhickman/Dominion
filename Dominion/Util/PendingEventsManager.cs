@@ -38,9 +38,9 @@ namespace Dominion.Util
             {
                 SendPendingRequest((PendingCardSelection)request);
             }
-            else if (request is PendingChoice)
+            else if (request is PendingDecision)
             {
-                SendPendingRequest((PendingChoice)request);
+                SendPendingRequest((PendingDecision)request);
             }
         }
 
@@ -49,7 +49,7 @@ namespace Dominion.Util
             pending.Player.OnCardSelectionRequested(pending);
         }
 
-        public void SendPendingRequest(PendingChoice pending)
+        public void SendPendingRequest(PendingDecision pending)
         {
             pending.Player.OnChoiceRequested(pending);
         }

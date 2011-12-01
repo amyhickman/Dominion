@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Dominion.Constants
 {
-    public enum ChoiceCode
+    public enum DecisionCode
     {
         PutDeckOnDiscardPile
     }

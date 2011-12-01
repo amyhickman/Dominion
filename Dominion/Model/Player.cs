@@ -33,7 +33,7 @@ namespace Dominion.Model
             Game.ReceivePendingEventResponse(response);
         }
 
-        public void MakeDecision(PendingChoiceResponse response)
+        public void MakeDecision(PendingDecisionResponse response)
         {
             Game.ReceivePendingEventResponse(response);
         }
@@ -146,7 +146,7 @@ namespace Dominion.Model
         /// </summary>
         /// <param name="choosingPlayer">The player making the decision</param>
         /// <param name="choice">The description of the choice being made</param>
-        public abstract void OnChoiceRequested(PendingChoice choice);
+        public abstract void OnChoiceRequested(PendingDecision choice);
 
     }
 }

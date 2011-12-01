@@ -6,13 +6,13 @@ using Dominion.Constants;
 
 namespace Dominion.Model
 {
-    public class PendingChoice : PendingEvent
+    public class PendingDecision : PendingEvent
     {
-        public ChoiceCode Choice { get; set; }
+        public DecisionCode Choice { get; set; }
         
         public override bool IsSatisfiedByResponse(PendingEventResponse response)
         {
-            PendingChoiceResponse choiceResponse = response as PendingChoiceResponse;
+            PendingDecisionResponse choiceResponse = response as PendingDecisionResponse;
             return (choiceResponse != null);
         }
     }

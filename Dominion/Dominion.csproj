@@ -60,7 +60,7 @@
     <Compile Include="Cards\Village.cs" />
     <Compile Include="Cards\Witch.cs" />
     <Compile Include="Cards\Woodcutter.cs" />
-    <Compile Include="Constants\ChoiceCode.cs" />
+    <Compile Include="Constants\DecisionCode.cs" />
     <Compile Include="Exceptions\YouCantDoThatException.cs" />
     <Compile Include="Exceptions\CardNotFoundException.cs" />
     <Compile Include="Interfaces\IPlayCardResults.cs" />
@@ -73,8 +73,8 @@
     <Compile Include="Model\Game.cs" />
     <Compile Include="Model\GameSetup.cs" />
     <Compile Include="Constants\LocationCode.cs" />
-    <Compile Include="Model\PendingChoice.cs" />
-    <Compile Include="Model\PendingChoiceResponse.cs" />
+    <Compile Include="Model\PendingDecision.cs" />
+    <Compile Include="Model\PendingDecisionResponse.cs" />
     <Compile Include="Model\PendingEvent.cs" />
     <Compile Include="Model\PendingEventResponse.cs" />
     <Compile Include="Model\PlayCardResults.cs" />
