@@ -16,6 +16,11 @@ namespace Dominion.Util
             Game = g;
         }
 
+        public bool AwaitingResponses
+        {
+            get { return _pending.Count > 0; }
+        }
+
         public void AddPendingEvent(PendingEvent pending)
         {
             lock (_pending)
@@ -33,7 +38,7 @@ namespace Dominion.Util
             }
 
             if (request.IsSatisfiedByResponse(response))
-                request.OnResponse(response);
+                request.OnFulfillment(response);
             else if (request is PendingCardSelection)
             {
                 SendPendingRequest((PendingCardSelection)request);
@@ -46,12 +51,12 @@ namespace Dominion.Util
 
         public void SendPendingRequest(PendingCardSelection pending)
         {
-            pending.Player.OnCardSelectionRequested(pending);
+            pending.Target.OnCardSelectionRequested(pending);
         }
 
         public void SendPendingRequest(PendingDecision pending)
         {
-            pending.Player.OnChoiceRequested(pending);
+            pending.Target.OnChoiceRequested(pending);
         }
     }
 }

@@ -14,26 +14,31 @@ namespace Dominion.Model
         public List<Card> CardOptions { get; set; }
         public bool IsRequired { get; set; }
 
-        public override bool IsSatisfiedByResponse(PendingEventResponse response)
+        public Func<PendingCardSelectionResponse, List<Guid>, bool> OnResponse { get; set; }
+
+        public List<Card> GetValidSelections(PendingCardSelectionResponse response)
         {
-            PendingCardSelectionResponse cardSelectionResponse = response as PendingCardSelectionResponse;
-            if (cardSelectionResponse == null)
+            return (from co in CardOptions
+                    where response.Selections.Contains(co.Id)
+                    select co).ToList();
+        }
+
+        public bool ValidateResponse(PendingCardSelectionResponse response)
+        {
+            if (response == null)
+                throw new ArgumentNullException("response");
+
+            if (IsRequired && response.Declined)
                 return false;
 
-            if (IsRequired && cardSelectionResponse.Declined)
+            if (response.Declined)
+                return true;
+
+            var goodSelections = GetValidSelections(response);
+            if (goodSelections.Count < MinQty || goodSelections.Count > MaxQty)
                 return false;
 
-            if (cardSelectionResponse.Selections.Count < MinQty || cardSelectionResponse.Selections.Count > MaxQty)
-                return false;
 
-            List<Card> options = new List<Card>(CardOptions);
-            foreach (var c in cardSelectionResponse.Selections)
-            {
-                if (!options.Contains(c))
-                    return false;
-
-                options.Remove(c);
-            }
 
             return true;
         }

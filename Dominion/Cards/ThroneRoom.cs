@@ -33,12 +33,12 @@ namespace Dominion.Cards
         {
             ctx.AddPendingEvent(new PendingCardSelection()
                 {
-                    Player = ctx.Actor, 
+                    Target = ctx.Actor, 
                     CardOptions = new List<Card>(ctx.Owner.Hand.Where(c => c.IsAction)),
                     IsRequired = true, 
                     MinQty = 1, 
                     MaxQty = 1, 
-                    OnResponse = OnCardsSelected
+                    OnFulfillment = OnCardsSelected
                 });
         }
         

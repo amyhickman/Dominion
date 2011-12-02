@@ -23,7 +23,7 @@ namespace Dominion.Cards
         {
             ctx.AddPendingEvent(new PendingCardSelection()
             {
-                Player = ctx.Actor,
+                Target = ctx.Actor,
                 CardOptions = new List<Card>(ctx.Owner.Hand),
                 IsRequired = false,
                 MinQty = 0,

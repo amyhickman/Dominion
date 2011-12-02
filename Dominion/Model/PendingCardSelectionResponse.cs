@@ -9,12 +9,12 @@ namespace Dominion.Model
 {
     public class PendingCardSelectionResponse : PendingEventResponse
     {
-        public IList<Card> Selections { get; private set; }
+        public IList<Guid> Selections { get; private set; }
 
-        public PendingCardSelectionResponse(Guid pendingEventId, IList<Card> selections, bool declined = false)
+        public PendingCardSelectionResponse(Guid pendingEventId, IList<Guid> selections, bool declined = false)
             : base(pendingEventId)
         {
-            Selections = new List<Card>(selections);
+            Selections = new List<Guid>(selections);
             Declined = declined;
         }
     }

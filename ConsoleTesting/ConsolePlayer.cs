@@ -96,7 +96,7 @@ namespace ConsoleTesting
         }
 
 
-        public override void OnChoiceRequested(PendingChoice choice)
+        public override void OnChoiceRequested(PendingDecision choice)
         {
             throw new NotImplementedException();
         }

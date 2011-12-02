@@ -10,20 +10,23 @@ namespace Dominion.Model
 {
     public class PlayContext
     {
-        public Game Game { get; set; }
-        public SuppliesManager Supplies { get; set; }
+        private SuppliesManager Supplies { get; set; }
         public Turn Turn { get; set; }
         public bool IsPossessed { get { return Turn.Possessor != null; } }
         public Player Possessor { get { return Turn.Possessor; } }
         public Player Owner { get { return Turn.Owner; } }
         public Player Actor { get { return Turn.Possessor ?? Turn.Owner; } }
 
+        private PendingEventsManager _pendingManager;
+        private Game _game;
+
         private IPlayCardResults _playResults = new PlayCardResults();
 
-        public PlayContext(Game game, Turn turn, SuppliesManager suppliesManager)
+        public PlayContext(Game game, Turn turn, SuppliesManager suppliesManager, PendingEventsManager pendingManager)
         {
-            Game = game;
+            _game = game;
             Turn = turn;
+            _pendingManager = pendingManager;
         }
 
         public IPlayCardResults GetResults()
@@ -37,13 +40,13 @@ namespace Dominion.Model
         /// <param name="pending"></param>
         public void AddPendingEvent(PendingEvent pending)
         {
-            Game.AddPendingEvent(pending);
+            _pendingManager.AddPendingEvent(pending);
         }
 
         #region Iterating across players
         public void ForEveryPlayer(Action<Player> act)
         {
-            foreach (var p in Game.GetPlayers())
+            foreach (var p in _game.GetPlayers())
             {
                 act(p);
             }
@@ -51,7 +54,7 @@ namespace Dominion.Model
 
         public void ForEachOtherPlayer(Action<Player> act)
         {
-            foreach (var p in Game.GetPlayers())
+            foreach (var p in _game.GetPlayers())
             {
                 if (p.Equals(Actor))
                     continue;
@@ -89,7 +92,7 @@ namespace Dominion.Model
         public IList<Card> DrawCards(Player drawer, CardContainer deck, int count = 1)
         {
             IList<Card> retval = deck.Draw(count);
-            Game.NotifyPlayers(
+            _game.NotifyPlayers(
                 p => p.OnDrawCards(drawer, retval), 
                 p => p.OnDrawCardsNotVisible(drawer, count));
             return retval;
@@ -103,7 +106,7 @@ namespace Dominion.Model
         /// <param name="count"></param>
         public void GainAction(int count = 1)
         {
-            Game.NotifyPlayers(p => p.OnActionGain(count));
+            _game.NotifyPlayers(p => p.OnActionGain(count));
             Turn.ActionsRemaining += count;
         }
 
@@ -113,7 +116,7 @@ namespace Dominion.Model
         /// <param name="count"></param>
         public void GainTreasure(int count = 1)
         {
-            Game.NotifyPlayers(p => p.OnTreasureGain(count));
+            _game.NotifyPlayers(p => p.OnTreasureGain(count));
             Turn.TreasureRemaining += count;
         }
 
@@ -123,7 +126,7 @@ namespace Dominion.Model
         /// <param name="count"></param>
         public void GainBuy(int count = 1)
         {
-            Game.NotifyPlayers(p => p.OnBuyGain(count));
+            _game.NotifyPlayers(p => p.OnBuyGain(count));
             Turn.BuysRemaining += count;
         }
         #endregion
@@ -145,7 +148,7 @@ namespace Dominion.Model
         /// <param name="card">The card being revealed</param>
         public void RevealCard(Player revealer, Card card)
         {
-            Game.NotifyPlayers(p => p.OnRevealCard(revealer, card));
+            _game.NotifyPlayers(p => p.OnRevealCard(revealer, card));
         }
         #endregion
 
@@ -179,7 +182,7 @@ namespace Dominion.Model
                 retval = pile.Draw();
             }
 
-            Game.NotifyPlayers(p => p.OnGainCard(target, code));
+            _game.NotifyPlayers(p => p.OnGainCard(target, code));
             return retval;
         }
         #endregion
@@ -201,7 +204,7 @@ namespace Dominion.Model
         /// <param name="card"></param>
         public void PutCardOnDeck(Player target, Card card)
         {
-            Game.NotifyPlayers(
+            _game.NotifyPlayers(
                 p => p.OnPutCardOnDeck(target, card),
                 p => p.OnPutCardOnDeckNotVisible(target));
 
@@ -224,7 +227,7 @@ namespace Dominion.Model
         /// <param name="target">The hand revealer</param>
         public void RevealHand(Player target)
         {
-            Game.NotifyPlayers(p=> p.OnRevealHand(target, target.Hand.ToList()));
+            _game.NotifyPlayers(p=> p.OnRevealHand(target, target.Hand.ToList()));
         }
         #endregion
 
@@ -244,7 +247,7 @@ namespace Dominion.Model
         public void ShuffleDeck(Player target)
         {
             target.Deck.Shuffle();
-            Game.NotifyPlayers(p => p.OnShuffleDeck(target));
+            _game.NotifyPlayers(p => p.OnShuffleDeck(target));
         }
         #endregion
 

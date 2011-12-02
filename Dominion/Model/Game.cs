@@ -47,7 +47,7 @@ namespace Dominion.Model
         #region Player management
         public IList<Player> GetPlayers() { return new List<Player>(_players); }
         
-        public Player CurrentPlayer { get { return CurrentTurn.Owner; } }
+        public Player CurrentPlayer { get { return CurrentTurn.Possessor ?? CurrentTurn.Owner; } }
         #endregion
 
         #region Event notifications
@@ -67,7 +67,7 @@ namespace Dominion.Model
 
         private PlayContext CreatePlayContext()
         {
-            return new PlayContext(this, CurrentTurn, SupplyMan);
+            return new PlayContext(this, CurrentTurn, SupplyMan, PendingMan);
         }
 
         private void MoveCardToInPlay(Card c)
@@ -75,12 +75,6 @@ namespace Dominion.Model
             c.Container.Remove(c);
             CurrentTurn.CardsPlayed.Add(c);
             CurrentTurn.CardsInPlay.Add(c);
-        }
-
-        public void AddPendingEvent(PendingEvent pending)
-        {
-            // TODO: Yes, this is not thread-safe in the least.  I know, shut up.  
-            PendingMan.AddPendingEvent(pending);
         }
 
         public void ReceivePendingEventResponse(PendingEventResponse response)
@@ -96,51 +90,48 @@ namespace Dominion.Model
         {
             lock (_lck)
             {
+                if (PendingMan.AwaitingResponses)
+                    throw new YouCantDoThatException("Waiting for responses from players");
+
                 if (!CurrentPlayer.Equals(player))
                     throw new YouCantDoThatException("It's not your turn");
 
-                return PlayCardInternal(player, c);
-            }
-        }
+                if (!(c.IsAction || c.IsTreasure))
+                    throw new YouCantDoThatException("You can only play actions and treasures");
 
-        private IPlayCardResults PlayCardInternal(Player player, Card c)
-        {
-            PlayContext ctx = CreatePlayContext();
+                PlayContext ctx = CreatePlayContext();
 
-            if (!(c.IsAction || c.IsTreasure))
-                throw new YouCantDoThatException("You can only play actions and treasures");
-
-            if (c.IsAction)
-            {
-                if (CurrentTurn.ActionsRemaining <= 0)
+                if (c.IsAction)
                 {
-                    CurrentTurn.Phase = Phases.Buy;
-                    throw new YouCantDoThatException("You have no actions remaining");
+                    if (CurrentTurn.ActionsRemaining <= 0)
+                    {
+                        CurrentTurn.Phase = Phases.Buy;
+                        throw new YouCantDoThatException("You have no actions remaining");
+                    }
+                    if (CurrentTurn.Phase != Phases.Action)
+                        throw new YouCantDoThatException("You can only play actions during your action phase");
+
+                    CurrentTurn.ActionsRemaining--;
+                    MoveCardToInPlay(c);
+                    c.OnPlay(ctx);
+                    return ctx.GetResults();
                 }
-                if (CurrentTurn.Phase != Phases.Action)
-                    throw new YouCantDoThatException("You can only play actions during your action phase");
+                else if (c.IsTreasure)
+                {
+                    if (CurrentTurn.Phase == Phases.Action)
+                        CurrentTurn.Phase = Phases.Buy;
 
-                CurrentTurn.ActionsRemaining--;
-                MoveCardToInPlay(c);
-                c.OnPlay(ctx);
-                return ctx.GetResults();
+                    if (CurrentTurn.Phase == Phases.Cleanup)
+                        throw new YouCantDoThatException("You cannot play treasures during your cleanup phase");
+
+                    MoveCardToInPlay(c);
+                    CurrentTurn.TreasureRemaining += c.TreasureValue;
+                    c.OnPlay(ctx);
+                    return ctx.GetResults();
+                }
+                else
+                    throw new YouCantDoThatException("You cannot play victory cards");
             }
-            else if (c.IsTreasure)
-            {
-                if (CurrentTurn.Phase == Phases.Action)
-                    CurrentTurn.Phase = Phases.Buy;
-
-                if (CurrentTurn.Phase == Phases.Cleanup)
-                    throw new YouCantDoThatException("You cannot play treasures during your cleanup phase");
-
-                MoveCardToInPlay(c);
-                CurrentTurn.TreasureRemaining += c.TreasureValue;
-                c.OnPlay(ctx);
-                return ctx.GetResults();
-            }
-            else
-                throw new YouCantDoThatException("You cannot play victory cards");
-
         }
         #endregion
     }

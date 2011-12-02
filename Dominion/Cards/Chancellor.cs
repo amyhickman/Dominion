@@ -24,8 +24,8 @@ namespace Dominion.Cards
             ctx.GainTreasure(2);
             ctx.AddPendingEvent(new PendingDecision()
                 {
-                    Player = ctx.Actor,
-                    Choice = DecisionCode.PutDeckOnDiscardPile
+                    Target = ctx.Actor,
+                    Decision = DecisionCode.PutDeckOnDiscardPile
                 });
         }
     }

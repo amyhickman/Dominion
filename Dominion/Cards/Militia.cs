@@ -24,7 +24,7 @@ namespace Dominion.Cards
             ctx.GainTreasure(2);
             ctx.ForEachOtherPlayer(p => ctx.AddPendingEvent(new PendingCardSelection()
             {
-                Player = p,
+                Target = p,
                 CardOptions = new List<Card>(p.Hand),
                 IsRequired = true,
                 MinQty = p.Hand.Count - 3,

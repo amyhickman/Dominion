@@ -35,7 +35,7 @@ namespace Dominion.Cards
                             var victories = p.Hand.Where(c => victoryCodes.Contains(c.Code)).ToList();
                             ctx.AddPendingEvent(new PendingCardSelection() 
                             { 
-                                Player = p, 
+                                Target = p, 
                                 CardOptions = new List<Card>(victories),
                                 IsRequired = true, 
                                 MinQty = 1, 
