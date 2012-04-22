@@ -63,22 +63,21 @@ namespace Dominion.Util
                 var card = factory();
                 _cards.Add(card.Code, factory);
 
-                Card c = factory();
                 List<CardCode> codes;
 
-                if (!_cardsInSet.TryGetValue(c.Set, out codes))
+                if (!_cardsInSet.TryGetValue(card.Set, out codes))
                 {
-                    _cardsInSet.Add(c.Set, codes = new List<CardCode>());
+                    _cardsInSet.Add(card.Set, codes = new List<CardCode>());
                 }
-                codes.Add(c.Code);
+                codes.Add(card.Code);
 
-                if (c.CanBeSupply)
+                if (card.CanBeSupply)
                 {
-                    if (!_suppliesInSet.TryGetValue(c.Set, out codes))
+                    if (!_suppliesInSet.TryGetValue(card.Set, out codes))
                     {
-                        _suppliesInSet.Add(c.Set, codes = new List<CardCode>());
+                        _suppliesInSet.Add(card.Set, codes = new List<CardCode>());
                     }
-                    codes.Add(c.Code);
+                    codes.Add(card.Code);
                 }
             }
         }

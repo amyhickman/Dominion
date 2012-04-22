@@ -3,7 +3,6 @@ using Dominion.Constants;
 using Dominion.Model;
 using Dominion.Interfaces;
 using Dominion.Cards;
-using Dominion.ServiceModel;
 using System.Linq.Expressions;
 using AutoMapper;
 using Dominion.Util;

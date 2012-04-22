@@ -37,16 +37,17 @@ namespace Dominion.Util
                 request = _pending[response.PendingEventId];
             }
 
-            if (request.IsSatisfiedByResponse(response))
-                request.OnFulfillment(response);
-            else if (request is PendingCardSelection)
-            {
-                SendPendingRequest((PendingCardSelection)request);
-            }
-            else if (request is PendingDecision)
-            {
-                SendPendingRequest((PendingDecision)request);
-            }
+            // TODO
+            //if (request.IsSatisfiedByResponse(response))
+            //    request.OnFulfillment(response);
+            //else if (request is PendingCardSelection)
+            //{
+            //    SendPendingRequest((PendingCardSelection)request);
+            //}
+            //else if (request is PendingDecision)
+            //{
+            //    SendPendingRequest((PendingDecision)request);
+            //}
         }
 
         public void SendPendingRequest(PendingCardSelection pending)

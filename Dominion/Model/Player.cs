@@ -14,7 +14,6 @@ namespace Dominion.Model
         public CardContainer Deck { get; private set; }
         public CardContainer DiscardPile { get; private set; }
         public int Id { get; set; }
-        public int VictoryPoints { get; set; }
 
         public Player()
         {

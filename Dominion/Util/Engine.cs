@@ -6,7 +6,6 @@ using AutoMapper;
 
 using Dominion.Interfaces;
 using Dominion.Model;
-using Dominion.ServiceModel;
 
 
 namespace Dominion.Util
