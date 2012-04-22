@@ -18,7 +18,7 @@ namespace ConsoleTesting
             me.Nickname = "Jason";
             you.Nickname = "Jennifer";
 
-            GameSetup setup = new GameSetup();
+            GameFactory setup = new GameFactory();
             setup.AddPlayer(me);
             setup.AddPlayer(you);
 

@@ -7,7 +7,7 @@ using Dominion.Constants;
 
 namespace Dominion.Model
 {
-    public class GameSetup
+    public class GameFactory
     {
         private static readonly CardCode[] _defaultSupplyCodes = new CardCode[] 
         {
@@ -20,7 +20,7 @@ namespace Dominion.Model
         public IList<CardCode> UndesiredSupplies { get; private set; }
         public IList<CardSet> DesiredSets { get; private set; }
 
-        public GameSetup()
+        public GameFactory()
         {
             Players = new List<Player>();
             DesiredSupplies = new List<CardCode>();
