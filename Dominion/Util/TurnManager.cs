@@ -40,7 +40,12 @@ namespace Dominion.Util
 
         public void TakeExtraTurn(Turn turn)
         {
-            _turns.Insert(0, turn);
+            _turns.Insert(0, new Turn(turn.Owner, turn.Possessor, false));
+        }
+
+        public bool IsPlayersTurn(Player p)
+        {
+            return p.Equals(Current.Possessor ?? Current.Owner);
         }
     }
 }

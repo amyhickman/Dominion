@@ -10,12 +10,14 @@ using Dominion.Exceptions;
 
 namespace Dominion.Model
 {
+    /// <summary>
+    /// Manages overall game state
+    /// </summary>
     public class Game
     {
         private static readonly ILog _log = LogManager.GetLogger(typeof(Game));
 
         private readonly List<Player> _players = new List<Player>();
-        private readonly bool _started = false;
         private readonly SuppliesManager SupplyMan;
         private readonly TurnManager TurnMan;
         private readonly PendingEventsManager PendingMan;
@@ -31,16 +33,6 @@ namespace Dominion.Model
             SupplyMan = new SuppliesManager(this, supplies);
             TurnMan = new TurnManager(this, true);
             PendingMan = new PendingEventsManager(this);
-
-            foreach (var p in _players)
-            {
-                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Copper, 7));
-                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Estate, 3));
-                p.Deck.Shuffle();
-                p.Hand.AddRange(p.Deck.Draw(5));
-            }
-
-            _started = true;
         }
         #endregion
         

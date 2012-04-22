@@ -7,3 +7,8 @@ Witch + Possession			- does the possessor gain a curse?  YES
 http://boardgamegeek.com/thread/718501/possession-and-on-gain-effects
 
 Bureaucrat + Possession		- does the possessor have to reveal his own hand?  does the possessee?
+
+
+
+=====================================================================
+

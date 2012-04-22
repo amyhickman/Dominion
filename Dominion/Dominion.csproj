@@ -74,7 +74,7 @@
     <Compile Include="Model\Card.cs" />
     <Compile Include="Constants\CardCode.cs" />
     <Compile Include="Model\CardContainer.cs" />
-    <Compile Include="Model\CardSet.cs" />
+    <Compile Include="Constants\CardSet.cs" />
     <Compile Include="Constants\CardType.cs" />
     <Compile Include="Model\Effect.cs" />
     <Compile Include="Model\Game.cs" />
@@ -93,7 +93,6 @@
     <Compile Include="Model\PendingCardSelectionResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\CardDirectory.cs" />
-    <Compile Include="Util\Engine.cs" />
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\PendingEventsManager.cs" />
     <Compile Include="Util\RNG.cs" />

@@ -67,8 +67,20 @@ namespace Dominion.Model
                 .ToList();
         }
 
+        private void SetupInitialHands()
+        {
+            foreach (var p in Players)
+            {
+                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Copper, 7));
+                p.Deck.AddRange(CardDirectory.CreateCards(CardCode.Estate, 3));
+                p.Deck.Shuffle();
+                p.Hand.AddRange(p.Deck.Draw(5));
+            }
+        }
+
         public Game CreateGame()
         {
+            SetupInitialHands();
             return CreateGame(GenerateRandomSupplies());
         }
 
@@ -77,6 +89,8 @@ namespace Dominion.Model
             if (Players.Count < 2)
                 throw new InvalidOperationException("Not enough players");
 
+
+            SetupInitialHands();
             return new Game(Players, GetTotalSupplies(desiredSupplies));
         }
     }
