@@ -23,6 +23,10 @@ namespace Dominion.Model
         public virtual Uri ImageSource { get { return null; } }
         public abstract CardSet Set { get; }
         public virtual CardType Type { get { return CardType.Action; } }
+
+        /// <summary>
+        /// If this card is in the supply pile, it may require other cards be as well.  For instance, a witch requires curse cards.  If this card requires no other cards, an empty list is returned.
+        /// </summary>
         public virtual IList<CardCode> RequiresInSupply { get { return new List<CardCode>(); } }
 
         public bool IsCardType(CardType t)

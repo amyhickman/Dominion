@@ -13,7 +13,6 @@ namespace Dominion.Model
         public CardContainer Hand { get; private set; }
         public CardContainer Deck { get; private set; }
         public CardContainer DiscardPile { get; private set; }
-        public int Id { get; set; }
 
         public Player()
         {

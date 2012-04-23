@@ -8,7 +8,7 @@ using Dominion.Constants;
 
 namespace Dominion.Util
 {
-    public class SuppliesManager
+    public class SuppliesManager : IEnumerable<CardCode>
     {
         private static readonly ILog _log = LogManager.GetLogger(typeof(SuppliesManager));
 
@@ -19,9 +19,11 @@ namespace Dominion.Util
         public SuppliesManager(Game game, IList<CardCode> supplies)
         {
             Game = game;
+            foreach (var s in supplies)
+                AddSupply(s);
         }
 
-        private void CreateSupplyPile(CardCode code)
+        private CardContainer CreateSupplyPile(CardCode code)
         {
             CardContainer pile = new CardContainer(null);
             int quantity = 10;
@@ -43,7 +45,7 @@ namespace Dominion.Util
                 pile.Add(card);
             }
 
-            _supplies.Add(code, pile);
+            return pile;
         }
 
         public void AddSupply(CardCode code)
@@ -54,7 +56,8 @@ namespace Dominion.Util
             if (_supplies.ContainsKey(code))
                 throw new InvalidOperationException("Supply already added.");
 
-            CreateSupplyPile(code);
+            var pile = CreateSupplyPile(code);
+            _supplies.Add(code, pile);
         }
 
         public CardContainer this[CardCode code]
@@ -65,5 +68,15 @@ namespace Dominion.Util
         public bool HasSupply(CardCode code) { return _supplies.ContainsKey(code); }
 
         public IList<CardCode> GetSupplyCodes() { return new List<CardCode>(_supplies.Keys); }
+
+        public IEnumerator<CardCode> GetEnumerator()
+        {
+            return _supplies.Keys.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return _supplies.Keys.GetEnumerator();
+        }
     }
 }

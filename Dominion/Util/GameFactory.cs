@@ -80,7 +80,6 @@ namespace Dominion.Model
 
         public Game CreateGame()
         {
-            SetupInitialHands();
             return CreateGame(GenerateRandomSupplies());
         }
 
@@ -91,7 +90,12 @@ namespace Dominion.Model
 
 
             SetupInitialHands();
-            return new Game(Players, GetTotalSupplies(desiredSupplies));
+            var g = new Game(Players, GetTotalSupplies(desiredSupplies));
+
+            foreach (var p in Players)
+                p.Game = g;
+
+            return g;
         }
     }
 }

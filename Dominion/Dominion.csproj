@@ -95,6 +95,7 @@
     <Compile Include="Util\CardDirectory.cs" />
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\PendingEventsManager.cs" />
+    <Compile Include="Util\PlayOptionsManager.cs" />
     <Compile Include="Util\RNG.cs" />
     <Compile Include="Util\SuppliesManager.cs" />
     <Compile Include="Util\TurnManager.cs" />

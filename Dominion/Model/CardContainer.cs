@@ -6,7 +6,7 @@ using Dominion.Util;
 
 namespace Dominion.Model
 {
-    public class CardContainer : IList<Card>
+    public class CardContainer : IList<Card>, IEnumerable<Card>
     {
         public Player Owner { get; private set; }
         private List<Card> _cards = new List<Card>();
@@ -73,7 +73,7 @@ namespace Dominion.Model
 
         public void CopyTo(Card[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            _cards.CopyTo(array, arrayIndex);
         }
 
         public int Count
