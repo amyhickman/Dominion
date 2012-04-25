@@ -49,6 +49,9 @@ namespace Dominion.Util
 
         public bool IsTurnEndable()
         {
+            if (_stack.Count <= 1)
+                return true;
+
             foreach (var x in _stack)
             {
                 if (x.Any(x2 => !x2.MayDecline))
@@ -56,6 +59,16 @@ namespace Dominion.Util
             }
 
             return true;
+        }
+
+        public void AddActionableItem(PlayOption po)
+        {
+            if (_stack.Count > 0)
+                _stack.Peek().Add(po);
+            else
+            {
+                _stack.Push(new List<PlayOption>(new PlayOption[] { po }));
+            }
         }
 
         public IList<PlayOption> GetOptions()
