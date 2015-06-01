@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Dominion.Model;
 using Dominion.Constants;
+using Dominion.OldModel;
 
 
 namespace Dominion.Cards
