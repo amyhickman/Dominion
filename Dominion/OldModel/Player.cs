@@ -17,21 +17,6 @@ namespace Dominion.OldModel
             DiscardPile = new CardContainer();
         }
 
-        public void PlayCard(Card c)
-        {
-            Game.PlayCard(this, c);
-        }
-
-        public void ChooseCards(PendingCardSelectionResponse response)
-        {
-            Game.ReceivePendingEventResponse(response);
-        }
-
-        public void MakeDecision(PendingDecisionResponse response)
-        {
-            Game.ReceivePendingEventResponse(response);
-        }
-
         /// <summary>
         /// Signals when a new turn starts
         /// </summary>
@@ -128,19 +113,6 @@ namespace Dominion.OldModel
         /// <param name="possessingPlayer">The player who is doing the possessing</param>
         /// <param name="possessedPlayer">The possessed</param>
         public abstract void OnPossessedTurnStart(Player possessingPlayer, Player possessedPlayer);
-
-        /// <summary>
-        /// Signals when a player needs to select some cards from a list of options
-        /// </summary>
-        /// <param name="pendingSelection">The cards available to choose from and how many need to be chosen</param>
-        public abstract void OnCardSelectionRequested(PendingCardSelection pendingSelection);
-
-        /// <summary>
-        /// Signals when a player needs to make a yes/no decision
-        /// </summary>
-        /// <param name="choosingPlayer">The player making the decision</param>
-        /// <param name="choice">The description of the choice being made</param>
-        public abstract void OnChoiceRequested(PendingDecision choice);
-
+        
     }
 }

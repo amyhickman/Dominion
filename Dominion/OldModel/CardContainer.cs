@@ -17,13 +17,10 @@ namespace Dominion.OldModel
         public void Insert(int index, Card item)
         {
             _cards.Insert(index, item);
-            
-            item.Container = this;
-        }
+                    }
 
         public void RemoveAt(int index)
         {
-            _cards[index].Container = null;
             _cards.RemoveAt(index);
         }
 
@@ -36,19 +33,15 @@ namespace Dominion.OldModel
         public void AddToTop(Card item)
         {
             _cards.Insert(0, item);
-            item.Container = this;
         }
 
         public void AddToBottom(Card item)
         {
             _cards.Add(item);
-            item.Container = this;
         }
 
         public void Clear()
         {
-            foreach (var c in _cards)
-                c.Container = null;
             _cards.Clear();
         }
 
@@ -74,7 +67,6 @@ namespace Dominion.OldModel
 
         public bool Remove(Card item)
         {
-            item.Container = null;
             return _cards.Remove(item);
         }
 

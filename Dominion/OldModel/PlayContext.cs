@@ -16,31 +16,15 @@ namespace Dominion.OldModel
         public Player Owner { get { return Turn.Owner; } }
         public Player Actor { get { return Turn.Possessor ?? Turn.Owner; } }
 
-        private PendingEventsManager _pendingManager;
         private Game _game;
 
-        private IPlayCardResults _playResults = new PlayCardResults();
 
-        public PlayContext(Game game, Turn turn, SuppliesManager suppliesManager, PendingEventsManager pendingManager)
+        public PlayContext(Game game, Turn turn, SuppliesManager suppliesManager)
         {
             _game = game;
             Turn = turn;
-            _pendingManager = pendingManager;
         }
 
-        public IPlayCardResults GetResults()
-        {
-            return _playResults;
-        }
-
-        /// <summary>
-        /// Adds a pending event
-        /// </summary>
-        /// <param name="pending"></param>
-        public void AddPendingEvent(PendingEvent pending)
-        {
-            _pendingManager.AddPendingEvent(pending);
-        }
 
         #region Iterating across players
         public void ForEveryPlayer(Action<Player> act)
