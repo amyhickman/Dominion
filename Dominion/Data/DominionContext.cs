@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dominion.Model;
-using Dominion.OldModel;
-using Microsoft.AspNet.Identity.EntityFramework;
+using System.Data.Entity;
 
 namespace Dominion.Data
 {
-    public class DominionContext : IdentityDbContext<ApplicationUser>
+    public class DominionContext : DbContext
     {
         public static Func<DominionContext> Create = () => new DominionContext();
  
