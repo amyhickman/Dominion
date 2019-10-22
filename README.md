@@ -1,1 +1,0 @@
-A .Net implementation of the [Dominion card game](http://en.wikipedia.org/wiki/Dominion_%28card_game%29).
